@@ -1,0 +1,689 @@
+// Interconnect & Roaming Management Platform - Database Schema
+// Generated for PostgreSQL using Prisma ORM
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================================
+// USER MANAGEMENT & AUTHENTICATION
+// ============================================================================
+
+model User {
+  id         String   @id @default(uuid()) @db.Uuid
+  email      String   @unique
+  password   String // Will be hashed with bcrypt
+  name       String
+  role       UserRole
+  partnerId  String?  @map("partner_id") @db.Uuid
+  partner    Partner? @relation(fields: [partnerId], references: [id], onDelete: SetNull)
+
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+  lastLogin  DateTime? @map("last_login")
+
+  // Relations
+  disputesCreated    Dispute[] @relation("DisputeCreatedBy")
+  disputesAssigned   Dispute[] @relation("DisputeAssignedTo")
+  anomaliesInvestigated Anomaly[] @relation("AnomalyInvestigatedBy")
+
+  @@map("users")
+}
+
+enum UserRole {
+  ADMIN
+  PARTNER
+  FINANCE
+  SUPPORT
+}
+
+// ============================================================================
+// PARTNER MANAGEMENT
+// ============================================================================
+
+model Partner {
+  id           String        @id @default(uuid()) @db.Uuid
+  partnerCode  String        @unique @map("partner_code") @db.VarChar(20)
+  partnerName  String        @map("partner_name") @db.VarChar(255)
+  partnerType  PartnerType   @map("partner_type")
+  countryCode  String        @map("country_code") @db.VarChar(3)
+  status       PartnerStatus @default(PENDING)
+  contactEmail String        @map("contact_email") @db.VarChar(255)
+  contactPhone String?       @map("contact_phone") @db.VarChar(20)
+
+  createdAt    DateTime      @default(now()) @map("created_at")
+  updatedAt    DateTime      @updatedAt @map("updated_at")
+
+  // Relations
+  agreements     Agreement[]
+  rateSheets     RateSheet[]
+  tapFiles       TAPFile[]
+  tapRecords     TAPRecord[]
+  billingCycles  BillingCycle[]
+  invoices       Invoice[]
+  disputes       Dispute[]
+  anomalies      Anomaly[]
+  testCalls      TestCall[]
+  users          User[]
+
+  @@index([partnerCode])
+  @@index([status])
+  @@index([countryCode])
+  @@map("partners")
+}
+
+enum PartnerType {
+  VENDOR
+  CUSTOMER
+  RECIPROCAL
+}
+
+enum PartnerStatus {
+  PENDING
+  ACTIVE
+  SUSPENDED
+  INACTIVE
+}
+
+// ============================================================================
+// AGREEMENTS & CONTRACTS
+// ============================================================================
+
+model Agreement {
+  id               String          @id @default(uuid()) @db.Uuid
+  partnerId        String          @map("partner_id") @db.Uuid
+  partner          Partner         @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+
+  agreementName    String          @map("agreement_name") @db.VarChar(255)
+  agreementType    AgreementType   @map("agreement_type")
+  startDate        DateTime        @map("start_date") @db.Date
+  endDate          DateTime?       @map("end_date") @db.Date
+
+  status           AgreementStatus @default(DRAFT)
+  policyStatus     PolicyStatus    @map("policy_status") @default(DRAFT)
+
+  documentTemplate String?         @map("document_template") @db.Text
+  contractFileUrl  String?         @map("contract_file_url") @db.Text
+  raexFormUrl      String?         @map("raex_form_url") @db.Text
+
+  currency         String            @db.VarChar(3)
+  billingCycle     BillingFrequency  @map("billing_cycle")
+
+  createdAt        DateTime        @default(now()) @map("created_at")
+  updatedAt        DateTime        @updatedAt @map("updated_at")
+
+  // Relations
+  ratePlans        RatePlan[]
+  raexForms        RAEXForm[]
+
+  @@index([partnerId])
+  @@index([status])
+  @@map("agreements")
+}
+
+enum AgreementType {
+  INTERCONNECT
+  ROAMING
+  BOTH
+}
+
+enum AgreementStatus {
+  DRAFT
+  PENDING
+  ACTIVE
+  EXPIRED
+  TERMINATED
+}
+
+enum PolicyStatus {
+  DRAFT
+  UNDER_REVIEW
+  APPROVED
+  ACTIVE
+}
+
+enum BillingFrequency {
+  MONTHLY
+  QUARTERLY
+  CUSTOM
+}
+
+// ============================================================================
+// RATE MANAGEMENT
+// ============================================================================
+
+model RateSheet {
+  id             String    @id @default(uuid()) @db.Uuid
+  partnerId      String    @map("partner_id") @db.Uuid
+  partner        Partner   @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+
+  rateSheetName  String    @map("rate_sheet_name") @db.VarChar(255)
+  effectiveDate  DateTime  @map("effective_date") @db.Date
+  expiryDate     DateTime? @map("expiry_date") @db.Date
+  isActive       Boolean   @default(true) @map("is_active")
+
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  rates          Rate[]
+
+  @@index([partnerId])
+  @@index([isActive])
+  @@index([effectiveDate])
+  @@map("rate_sheets")
+}
+
+model Rate {
+  id                  String       @id @default(uuid()) @db.Uuid
+  rateSheetId         String       @map("rate_sheet_id") @db.Uuid
+  rateSheet           RateSheet    @relation(fields: [rateSheetId], references: [id], onDelete: Cascade)
+
+  serviceType         ServiceType  @map("service_type")
+  direction           Direction
+  calledNumberPrefix  String?      @map("called_number_prefix") @db.VarChar(20)
+  callType            String?      @map("call_type") @db.VarChar(50)
+
+  ratePerUnit         Decimal      @map("rate_per_unit") @db.Decimal(10, 6)
+  currency            String       @db.VarChar(3)
+  minimumCharge       Decimal?     @map("minimum_charge") @db.Decimal(10, 6)
+  roundingRule        RoundingRule @map("rounding_rule")
+
+  tierStart           Int?         @map("tier_start")
+  tierEnd             Int?         @map("tier_end")
+
+  createdAt           DateTime     @default(now()) @map("created_at")
+
+  @@index([rateSheetId])
+  @@index([serviceType, direction])
+  @@index([calledNumberPrefix])
+  @@map("rates")
+}
+
+model RatePlan {
+  id             String       @id @default(uuid()) @db.Uuid
+  agreementId    String       @map("agreement_id") @db.Uuid
+  agreement      Agreement    @relation(fields: [agreementId], references: [id], onDelete: Cascade)
+
+  serviceType    ServiceType  @map("service_type")
+  direction      Direction
+
+  ratePerUnit    Decimal      @map("rate_per_unit") @db.Decimal(10, 6)
+  currency       String       @db.VarChar(3)
+
+  effectiveFrom  DateTime     @map("effective_from") @db.Date
+  effectiveTo    DateTime?    @map("effective_to") @db.Date
+
+  roundingRule   RoundingRule @map("rounding_rule")
+  minimumCharge  Decimal?     @map("minimum_charge") @db.Decimal(10, 6)
+
+  createdAt      DateTime     @default(now()) @map("created_at")
+
+  @@index([agreementId])
+  @@index([effectiveFrom])
+  @@map("rate_plans")
+}
+
+enum ServiceType {
+  VOICE
+  SMS
+  DATA
+  MMS
+}
+
+enum Direction {
+  INBOUND
+  OUTBOUND
+}
+
+enum RoundingRule {
+  UP
+  DOWN
+  NEAREST
+  NONE
+}
+
+// ============================================================================
+// TAP FILE PROCESSING
+// ============================================================================
+
+model TAPFile {
+  id                  String        @id @default(uuid()) @db.Uuid
+  partnerId           String        @map("partner_id") @db.Uuid
+  partner             Partner       @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+
+  filename            String        @db.VarChar(255)
+  fileSizeBytes       BigInt        @map("file_size_bytes")
+  direction           Direction
+  status              TAPFileStatus @default(UPLOADED)
+
+  uploadTimestamp     DateTime      @default(now()) @map("upload_timestamp")
+  processedTimestamp  DateTime?     @map("processed_timestamp")
+
+  recordsCount        Int?          @map("records_count")
+  totalCharges        Decimal?      @map("total_charges") @db.Decimal(15, 2)
+  errorMessage        String?       @map("error_message") @db.Text
+
+  // Relations
+  tapRecords          TAPRecord[]
+
+  @@index([partnerId])
+  @@index([status])
+  @@index([uploadTimestamp])
+  @@map("tap_files")
+}
+
+enum TAPFileStatus {
+  UPLOADED
+  PARSING
+  PARSED
+  RATED
+  ERROR
+}
+
+model TAPRecord {
+  id                String           @id @default(uuid()) @db.Uuid
+  tapFileId         String           @map("tap_file_id") @db.Uuid
+  tapFile           TAPFile          @relation(fields: [tapFileId], references: [id], onDelete: Cascade)
+
+  partnerId         String           @map("partner_id") @db.Uuid
+  partner           Partner          @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+
+  serviceType       ServiceType      @map("service_type")
+  callDateTime      DateTime         @map("call_date_time")
+
+  msisdn            String           @db.VarChar(20)
+  imsi              String?          @db.VarChar(15)
+  callingNumber     String?          @map("calling_number") @db.VarChar(20)
+  calledNumber      String?          @map("called_number") @db.VarChar(20)
+
+  durationSeconds   Int?             @map("duration_seconds")
+  dataVolumeMb      Decimal?         @map("data_volume_mb") @db.Decimal(10, 2)
+  messageCount      Int?             @map("message_count")
+
+  chargedAmount     Decimal?         @map("charged_amount") @db.Decimal(10, 6)
+  currency          String?          @db.VarChar(3)
+
+  processingStatus  ProcessingStatus @default(PENDING) @map("processing_status")
+  errorMessage      String?          @map("error_message") @db.Text
+
+  rawTapData        Json?            @map("raw_tap_data")
+
+  createdAt         DateTime         @default(now()) @map("created_at")
+
+  @@index([tapFileId])
+  @@index([partnerId])
+  @@index([processingStatus])
+  @@index([callDateTime])
+  @@index([msisdn])
+  @@map("tap_records")
+}
+
+enum ProcessingStatus {
+  PENDING
+  RATED
+  SETTLED
+  DISPUTED
+  FAILED
+}
+
+// ============================================================================
+// INVOICING & BILLING
+// ============================================================================
+
+model BillingCycle {
+  id              String            @id @default(uuid()) @db.Uuid
+  partnerId       String            @map("partner_id") @db.Uuid
+  partner         Partner           @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+
+  cycleNumber     Int               @map("cycle_number") // e.g., 202501 for Jan 2025
+  periodStart     DateTime          @map("period_start") @db.Date
+  periodEnd       DateTime          @map("period_end") @db.Date
+  cutOffDate      DateTime          @map("cut_off_date") @db.Date
+  dueDate         DateTime          @map("due_date") @db.Date
+
+  status          BillingCycleStatus @default(OPEN)
+
+  // Traffic summary
+  totalTAPFiles   Int               @default(0) @map("total_tap_files")
+  totalRecords    Int               @default(0) @map("total_records")
+  totalMinutes    Int               @default(0) @map("total_minutes")
+  totalSMS        Int               @default(0) @map("total_sms")
+  totalDataMB     Decimal           @default(0) @map("total_data_mb") @db.Decimal(15, 2)
+
+  // Financial summary
+  subtotal        Decimal           @default(0) @db.Decimal(15, 4)
+  discounts       Decimal           @default(0) @db.Decimal(15, 4)
+  taxes           Decimal           @default(0) @db.Decimal(15, 4)
+  totalAmount     Decimal           @default(0) @map("total_amount") @db.Decimal(15, 4)
+  currency        String            @default("USD") @db.VarChar(3)
+
+  // Links
+  invoiceId       String?           @unique @map("invoice_id") @db.Uuid
+  invoice         Invoice?          @relation(fields: [invoiceId], references: [id])
+
+  // Metadata
+  notes           String?           @db.Text
+  createdAt       DateTime          @default(now()) @map("created_at")
+  updatedAt       DateTime          @updatedAt @map("updated_at")
+  closedAt        DateTime?         @map("closed_at")
+  closedBy        String?           @map("closed_by") @db.Uuid
+
+  @@index([partnerId])
+  @@index([cycleNumber])
+  @@index([status])
+  @@index([periodStart, periodEnd])
+  @@unique([partnerId, cycleNumber])
+  @@map("billing_cycles")
+}
+
+enum BillingCycleStatus {
+  OPEN           // Actively collecting records
+  PROCESSING     // Calculating charges
+  INVOICED       // Invoice generated
+  CLOSED         // Cycle completed
+  DISPUTED       // Under dispute
+  CANCELLED      // Cancelled cycle
+}
+
+model Invoice {
+  id                  String        @id @default(uuid()) @db.Uuid
+  invoiceNumber       String        @unique @map("invoice_number") @db.VarChar(50)
+
+  partnerId           String        @map("partner_id") @db.Uuid
+  partner             Partner       @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+
+  billingCycle        BillingCycle?
+
+  billingPeriodStart  DateTime      @map("billing_period_start") @db.Date
+  billingPeriodEnd    DateTime      @map("billing_period_end") @db.Date
+
+  subtotal            Decimal       @db.Decimal(15, 2)
+  taxAmount           Decimal       @default(0) @map("tax_amount") @db.Decimal(15, 2)
+  totalAmount         Decimal       @map("total_amount") @db.Decimal(15, 2)
+  currency            String        @db.VarChar(3)
+
+  status              InvoiceStatus @default(DRAFT)
+
+  invoiceDate         DateTime      @map("invoice_date") @db.Date
+  dueDate             DateTime?     @map("due_date") @db.Date
+  paidDate            DateTime?     @map("paid_date") @db.Date
+
+  pdfUrl              String?       @map("pdf_url") @db.Text
+  notes               String?       @db.Text
+
+  lineItems           Json?         @map("line_items")
+
+  createdAt           DateTime      @default(now()) @map("created_at")
+  updatedAt           DateTime      @updatedAt @map("updated_at")
+
+  // Relations
+  disputes            Dispute[]
+
+  @@index([partnerId])
+  @@index([status])
+  @@index([invoiceDate])
+  @@index([dueDate])
+  @@map("invoices")
+}
+
+enum InvoiceStatus {
+  DRAFT
+  ISSUED
+  PAID
+  DISPUTED
+  CANCELLED
+  OVERDUE
+}
+
+// ============================================================================
+// DISPUTE MANAGEMENT
+// ============================================================================
+
+model Dispute {
+  id              String        @id @default(uuid()) @db.Uuid
+  disputeNumber   String        @unique @map("dispute_number") @db.VarChar(50)
+
+  invoiceId       String?       @map("invoice_id") @db.Uuid
+  invoice         Invoice?      @relation(fields: [invoiceId], references: [id], onDelete: SetNull)
+
+  partnerId       String        @map("partner_id") @db.Uuid
+  partner         Partner       @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+
+  disputeType     DisputeType   @map("dispute_type")
+  status          DisputeStatus @default(OPEN)
+  priority        Priority      @default(MEDIUM)
+
+  description     String        @db.Text
+  disputedAmount  Decimal?      @map("disputed_amount") @db.Decimal(15, 2)
+  resolution      String?       @db.Text
+
+  createdAt       DateTime      @default(now()) @map("created_at")
+  resolvedAt      DateTime?     @map("resolved_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
+
+  createdById     String?       @map("created_by_id") @db.Uuid
+  createdBy       User?         @relation("DisputeCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+
+  assignedToId    String?       @map("assigned_to_id") @db.Uuid
+  assignedTo      User?         @relation("DisputeAssignedTo", fields: [assignedToId], references: [id], onDelete: SetNull)
+
+  @@index([partnerId])
+  @@index([status])
+  @@index([priority])
+  @@index([createdAt])
+  @@map("disputes")
+}
+
+enum DisputeType {
+  BILLING
+  TECHNICAL
+  QUALITY
+  OTHER
+}
+
+enum DisputeStatus {
+  OPEN
+  IN_REVIEW
+  RESOLVED
+  REJECTED
+  ESCALATED
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+// ============================================================================
+// FRAUD DETECTION
+// ============================================================================
+
+model Anomaly {
+  id                  String          @id @default(uuid()) @db.Uuid
+
+  partnerId           String          @map("partner_id") @db.Uuid
+  partner             Partner         @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+
+  detectedAt          DateTime        @default(now()) @map("detected_at")
+  anomalyType         AnomalyType     @map("anomaly_type")
+  severity            AnomalySeverity
+
+  description         String          @db.Text
+  affectedServices    ServiceType[]   @map("affected_services")
+  metrics             Json
+
+  status              AnomalyStatus   @default(OPEN)
+  recommendedAction   String          @map("recommended_action") @db.Text
+
+  investigatedById    String?         @map("investigated_by_id") @db.Uuid
+  investigatedBy      User?           @relation("AnomalyInvestigatedBy", fields: [investigatedById], references: [id], onDelete: SetNull)
+  investigationNotes  String?         @map("investigation_notes") @db.Text
+
+  resolvedAt          DateTime?       @map("resolved_at")
+
+  @@index([partnerId])
+  @@index([status])
+  @@index([severity])
+  @@index([detectedAt])
+  @@map("anomalies")
+}
+
+enum AnomalyType {
+  UNUSUAL_TRAFFIC_VOLUME
+  HIGH_COST_DESTINATION
+  VELOCITY_ANOMALY
+  SUCCESS_RATE_DROP
+  UNUSUAL_CALL_DURATION
+  LATE_NIGHT_TRAFFIC
+  IRSF_SUSPECTED
+  SIM_BOX_FRAUD
+  WANGIRI_FRAUD
+}
+
+enum AnomalySeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum AnomalyStatus {
+  OPEN
+  INVESTIGATING
+  RESOLVED
+  FALSE_POSITIVE
+}
+
+// ============================================================================
+// RAEX & TECHNICAL CONFIGURATION
+// ============================================================================
+
+model RAEXForm {
+  id                     String   @id @default(uuid()) @db.Uuid
+  agreementId            String   @map("agreement_id") @db.Uuid
+  agreement              Agreement @relation(fields: [agreementId], references: [id], onDelete: Cascade)
+
+  networkName            String   @map("network_name") @db.VarChar(255)
+  tadigCode              String   @map("tadig_code") @db.VarChar(20)
+  mcc                    String   @db.VarChar(3)
+  mnc                    String   @db.VarChar(3)
+
+  supportedTechnologies  String[] @map("supported_technologies")
+  volteCapable           Boolean  @default(false) @map("volte_capable")
+  vowifiCapable          Boolean  @default(false) @map("vowifi_capable")
+  rcsCapable             Boolean  @default(false) @map("rcs_capable")
+
+  sccpAddress            String?  @map("sccp_address") @db.VarChar(50)
+  diameterEndpoint       String?  @map("diameter_endpoint") @db.VarChar(255)
+
+  tapVersion             String   @map("tap_version") @db.VarChar(10)
+  fileExchangeProtocol   String   @map("file_exchange_protocol") @db.VarChar(20)
+
+  createdAt              DateTime @default(now()) @map("created_at")
+  updatedAt              DateTime @updatedAt @map("updated_at")
+
+  @@index([agreementId])
+  @@index([tadigCode])
+  @@map("raex_forms")
+}
+
+// ============================================================================
+// TEST AUTOMATION
+// ============================================================================
+
+model TestCall {
+  id                 String       @id @default(uuid()) @db.Uuid
+
+  partnerId          String       @map("partner_id") @db.Uuid
+  partner            Partner      @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+
+  testType           TestType     @map("test_type")
+  direction          TestDirection
+
+  sourceMsisdn       String       @map("source_msisdn") @db.VarChar(20)
+  destinationMsisdn  String       @map("destination_msisdn") @db.VarChar(20)
+
+  scheduledTime      DateTime     @map("scheduled_time")
+  executedAt         DateTime?    @map("executed_at")
+
+  status             TestStatus   @default(SCHEDULED)
+  result             TestResult?
+
+  qualityMetrics     Json?        @map("quality_metrics")
+  details            Json?
+
+  errorMessage       String?      @map("error_message") @db.Text
+
+  createdAt          DateTime     @default(now()) @map("created_at")
+
+  @@index([partnerId])
+  @@index([status])
+  @@index([scheduledTime])
+  @@map("test_calls")
+}
+
+enum TestType {
+  VOICE_CALL
+  SMS
+  DATA_SESSION
+  VOLTE
+  VOWIFI
+  REGISTRATION
+}
+
+enum TestDirection {
+  MO
+  MT
+}
+
+enum TestStatus {
+  SCHEDULED
+  IN_PROGRESS
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+enum TestResult {
+  SUCCESS
+  FAILED
+  PARTIAL
+}
+
+// ============================================================================
+// POLICY DOCUMENTS
+// ============================================================================
+
+model PolicyDocument {
+  id          String        @id @default(uuid()) @db.Uuid
+
+  policyType  PolicyDocType @map("policy_type")
+  policyName  String        @map("policy_name") @db.VarChar(255)
+  content     String        @db.Text
+  version     String        @db.VarChar(20)
+  status      PolicyStatus  @default(DRAFT)
+
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+  createdBy   String?       @map("created_by") @db.VarChar(255)
+
+  @@index([policyType])
+  @@index([status])
+  @@map("policy_documents")
+}
+
+enum PolicyDocType {
+  AGREEMENT_TEMPLATE
+  SMS_REVENUE_COMMITMENT
+  TAX_POLICY
+  CUSTOM
+}

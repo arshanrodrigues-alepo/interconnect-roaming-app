@@ -1,0 +1,47 @@
+[
+  {
+    "calling_number": "+14155551234",
+    "called_number": "+442071234567",
+    "call_type": "VOICE",
+    "duration": 125,
+    "event_date_time": "2025-01-15T10:30:00Z",
+    "imsi": "310260123456789",
+    "partner_id": "GBRTM1"
+  },
+  {
+    "calling_number": "+14155551235",
+    "called_number": "+442071234568",
+    "call_type": "SMS",
+    "number_of_events": 1,
+    "event_date_time": "2025-01-15T10:35:00Z",
+    "imsi": "310260123456790",
+    "partner_id": "GBRTM1"
+  },
+  {
+    "calling_number": "+14155551236",
+    "called_number": "+14155559999",
+    "call_type": "VOICE",
+    "duration": 245,
+    "event_date_time": "2025-01-15T10:40:00Z",
+    "imsi": "310260123456791",
+    "partner_id": "USAVZ1"
+  },
+  {
+    "calling_number": "+14155551237",
+    "called_number": "+819012345678",
+    "call_type": "SMS",
+    "number_of_events": 2,
+    "event_date_time": "2025-01-15T10:45:00Z",
+    "imsi": "310260123456792",
+    "partner_id": "JPNDO1"
+  },
+  {
+    "calling_number": "+14155551238",
+    "called_number": "+442071234569",
+    "call_type": "VOICE",
+    "duration": 98,
+    "event_date_time": "2025-01-15T10:50:00Z",
+    "imsi": "310260123456793",
+    "partner_id": "FRAVF1"
+  }
+]

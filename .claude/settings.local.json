@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(tree:*)",
+      "Bash(sudo -S -u postgres psql:*)",
+      "Bash(npx tsx:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
