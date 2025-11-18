@@ -92,7 +92,7 @@ export default function PartnersPage() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto mb-4" style={{ borderColor: '#1f3d88' }}></div>
           <div className="text-gray-600">Loading...</div>
         </div>
       </div>
@@ -109,7 +109,10 @@ export default function PartnersPage() {
         {user?.role === 'ADMIN' && (
           <button
             onClick={() => setShowCreateForm(true)}
-            className="px-6 py-3 bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white rounded-lg font-semibold hover:from-purple-700 hover:to-fuchsia-700 transition flex items-center"
+            className="px-6 py-3 text-white rounded-lg font-semibold transition flex items-center"
+            style={{ backgroundImage: 'linear-gradient(to right, #1f3d88, #1f8888)' }}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundImage = 'linear-gradient(to right, #163368, #178080)'}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundImage = 'linear-gradient(to right, #1f3d88, #1f8888)'}
           >
             <svg
               className="w-5 h-5 mr-2"
@@ -139,7 +142,10 @@ export default function PartnersPage() {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent"
+              style={{ outlineColor: '#1f3d88' }}
+              onFocus={(e) => e.currentTarget.style.borderColor = '#1f3d88'}
+              onBlur={(e) => e.currentTarget.style.borderColor = ''}
             >
               <option value="">All Statuses</option>
               <option value="ACTIVE">Active</option>
@@ -156,7 +162,10 @@ export default function PartnersPage() {
             <select
               value={typeFilter}
               onChange={(e) => setTypeFilter(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent"
+              style={{ outlineColor: '#1f3d88' }}
+              onFocus={(e) => e.currentTarget.style.borderColor = '#1f3d88'}
+              onBlur={(e) => e.currentTarget.style.borderColor = ''}
             >
               <option value="">All Types</option>
               <option value="VENDOR">Vendor (Outgoing Only)</option>
@@ -208,14 +217,17 @@ export default function PartnersPage() {
                     <td className="px-6 py-4">
                       <Link
                         href={`/partners/${partner.partner_id}`}
-                        className="text-purple-600 hover:text-purple-800 font-medium"
+                        className="font-medium"
+                        style={{ color: '#1f3d88' }}
+                        onMouseEnter={(e) => e.currentTarget.style.color = '#163368'}
+                        onMouseLeave={(e) => e.currentTarget.style.color = '#1f3d88'}
                       >
                         {partner.partner_code}
                       </Link>
                     </td>
                     <td className="px-6 py-4 text-gray-900">{partner.partner_name}</td>
                     <td className="px-6 py-4">
-                      <span className="px-3 py-1 text-xs font-medium rounded-full bg-purple-100 text-purple-800">
+                      <span className="px-3 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">
                         {partner.partner_type}
                       </span>
                     </td>
@@ -255,7 +267,10 @@ export default function PartnersPage() {
                         )}
                         <Link
                           href={`/dashboard?partner=${partner.partner_id}`}
-                          className="px-3 py-1 text-xs bg-purple-600 text-white rounded hover:bg-purple-700"
+                          className="px-3 py-1 text-xs text-white rounded"
+                          style={{ backgroundColor: '#1f3d88' }}
+                          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#163368'}
+                          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#1f3d88'}
                         >
                           Dashboard
                         </Link>

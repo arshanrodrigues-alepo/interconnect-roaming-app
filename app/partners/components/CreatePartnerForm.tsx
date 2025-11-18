@@ -154,7 +154,7 @@ export default function CreatePartnerForm({ onClose, onSuccess }: CreatePartnerF
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="bg-gradient-to-r from-purple-600 to-fuchsia-600 px-8 py-6 rounded-t-2xl">
+        <div className="px-8 py-6 rounded-t-2xl" style={{ backgroundImage: 'linear-gradient(to right, #1f3d88, #1f8888)' }}>
           <div className="flex justify-between items-center">
             <div>
               <h2 className="text-2xl font-bold text-white">
@@ -166,17 +166,17 @@ export default function CreatePartnerForm({ onClose, onSuccess }: CreatePartnerF
               {/* Progress Indicator */}
               <div className="flex items-center space-x-2 mt-3">
                 <div className="flex items-center">
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${step === 1 ? 'bg-white text-purple-600' : 'bg-purple-400 text-white'}`}>
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${step === 1 ? 'bg-white' : 'text-white'}`} style={step === 1 ? { color: '#1f3d88' } : { backgroundColor: '#4a6bb5' }}>
                     {step > 1 ? '✓' : '1'}
                   </div>
-                  <span className="ml-2 text-sm text-purple-100">Partner</span>
+                  <span className="ml-2 text-sm" style={{ color: '#d1dcef' }}>Partner</span>
                 </div>
-                <div className="w-12 h-0.5 bg-purple-400"></div>
+                <div className="w-12 h-0.5" style={{ backgroundColor: '#4a6bb5' }}></div>
                 <div className="flex items-center">
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${step === 2 ? 'bg-white text-purple-600' : 'bg-purple-400 text-white'}`}>
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${step === 2 ? 'bg-white' : 'text-white'}`} style={step === 2 ? { color: '#1f3d88' } : { backgroundColor: '#4a6bb5' }}>
                     2
                   </div>
-                  <span className="ml-2 text-sm text-purple-100">Agreement</span>
+                  <span className="ml-2 text-sm" style={{ color: '#d1dcef' }}>Agreement</span>
                 </div>
               </div>
             </div>
@@ -210,7 +210,7 @@ export default function CreatePartnerForm({ onClose, onSuccess }: CreatePartnerF
               type="text"
               value={formData.partner_code}
               onChange={(e) => handleChange('partner_code', e.target.value.toUpperCase())}
-              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
+              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:border-transparent ${
                 errors.partner_code ? 'border-red-500' : 'border-gray-300'
               }`}
               placeholder="USAVZ1"
@@ -233,7 +233,7 @@ export default function CreatePartnerForm({ onClose, onSuccess }: CreatePartnerF
               type="text"
               value={formData.partner_name}
               onChange={(e) => handleChange('partner_name', e.target.value)}
-              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
+              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:border-transparent ${
                 errors.partner_name ? 'border-red-500' : 'border-gray-300'
               }`}
               placeholder="Verizon Wireless"
@@ -252,7 +252,10 @@ export default function CreatePartnerForm({ onClose, onSuccess }: CreatePartnerF
               <select
                 value={formData.partner_type}
                 onChange={(e) => handleChange('partner_type', e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent"
+                style={{ outlineColor: '#1f3d88' }}
+                onFocus={(e) => e.currentTarget.style.borderColor = '#1f3d88'}
+                onBlur={(e) => e.currentTarget.style.borderColor = ''}
               >
                 <option value="VENDOR">Vendor (Outgoing Only)</option>
                 <option value="CUSTOMER">Customer (Incoming Only)</option>
@@ -271,7 +274,7 @@ export default function CreatePartnerForm({ onClose, onSuccess }: CreatePartnerF
                 type="text"
                 value={formData.country_code}
                 onChange={(e) => handleChange('country_code', e.target.value.toUpperCase())}
-                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
+                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:border-transparent ${
                   errors.country_code ? 'border-red-500' : 'border-gray-300'
                 }`}
                 placeholder="USA"
@@ -293,7 +296,7 @@ export default function CreatePartnerForm({ onClose, onSuccess }: CreatePartnerF
               type="email"
               value={formData.contact_email}
               onChange={(e) => handleChange('contact_email', e.target.value)}
-              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
+              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:border-transparent ${
                 errors.contact_email ? 'border-red-500' : 'border-gray-300'
               }`}
               placeholder="roaming@example.com"
@@ -312,7 +315,7 @@ export default function CreatePartnerForm({ onClose, onSuccess }: CreatePartnerF
               type="tel"
               value={formData.contact_phone}
               onChange={(e) => handleChange('contact_phone', e.target.value)}
-              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
+              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:border-transparent ${
                 errors.contact_phone ? 'border-red-500' : 'border-gray-300'
               }`}
               placeholder="+1-555-0100"
@@ -323,10 +326,11 @@ export default function CreatePartnerForm({ onClose, onSuccess }: CreatePartnerF
           </div>
 
           {/* Info Box */}
-          <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+          <div className="rounded-lg p-4" style={{ backgroundColor: '#e8edf7', borderColor: '#a3b9df', borderWidth: '1px' }}>
             <div className="flex items-start">
               <svg
-                className="w-5 h-5 text-purple-600 mt-0.5 mr-3 flex-shrink-0"
+                className="w-5 h-5 mt-0.5 mr-3 flex-shrink-0"
+                style={{ color: '#1f3d88' }}
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"

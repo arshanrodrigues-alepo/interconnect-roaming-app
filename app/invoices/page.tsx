@@ -8,6 +8,7 @@ import Link from 'next/link';
 export default function InvoicesPage() {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState('');
 
   useEffect(() => {
@@ -16,15 +17,28 @@ export default function InvoicesPage() {
 
   const fetchInvoices = async () => {
     setLoading(true);
+    setError(null);
     try {
       const params = new URLSearchParams();
       if (statusFilter) params.append('status', statusFilter);
 
       const response = await fetch(`/api/invoices?${params}`);
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch invoices: ${response.status} ${response.statusText}`);
+      }
+
       const data = await response.json();
+
+      if (!data || !Array.isArray(data.invoices)) {
+        throw new Error('Invalid response format from server');
+      }
+
       setInvoices(data.invoices);
     } catch (error) {
       console.error('Failed to fetch invoices:', error);
+      setError(error instanceof Error ? error.message : 'Failed to load invoices');
+      setInvoices([]);
     } finally {
       setLoading(false);
     }
@@ -49,7 +63,7 @@ export default function InvoicesPage() {
         </div>
         <div className="bg-white rounded-xl shadow-sm p-6">
           <div className="text-sm text-gray-600 mb-2">Total Amount</div>
-          <div className="text-3xl font-bold text-purple-600">
+          <div className="text-3xl font-bold" style={{ color: '#1f3d88' }}>
             {formatCurrency(getTotalAmount())}
           </div>
         </div>
@@ -77,7 +91,10 @@ export default function InvoicesPage() {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2"
+              style={{ outlineColor: '#1f3d88' }}
+              onFocus={(e) => e.currentTarget.style.borderColor = '#1f3d88'}
+              onBlur={(e) => e.currentTarget.style.borderColor = ''}
             >
               <option value="">All Statuses</option>
               <option value="DRAFT">Draft</option>
@@ -90,10 +107,24 @@ export default function InvoicesPage() {
         </div>
       </div>
 
+      {/* Error Message */}
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+          <div className="flex items-center">
+            <svg className="w-5 h-5 text-red-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span className="text-red-800">{error}</span>
+          </div>
+        </div>
+      )}
+
       {/* Invoices Table */}
       <div className="bg-white rounded-xl shadow-sm overflow-hidden">
         {loading ? (
           <div className="p-8 text-center text-gray-500">Loading invoices...</div>
+        ) : error ? (
+          <div className="p-8 text-center text-gray-500">Unable to load invoices. Please try again.</div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full">
@@ -129,7 +160,7 @@ export default function InvoicesPage() {
                 {invoices.map((invoice) => (
                   <tr key={invoice.invoice_id} className="hover:bg-gray-50">
                     <td className="px-6 py-4">
-                      <div className="font-medium text-purple-600">
+                      <div className="font-medium" style={{ color: '#1f3d88' }}>
                         {invoice.invoice_number}
                       </div>
                     </td>
@@ -160,9 +191,15 @@ export default function InvoicesPage() {
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex space-x-2">
-                        <button className="px-3 py-1 text-xs bg-purple-600 text-white rounded hover:bg-purple-700">
+                        <Link
+                          href={`/invoices/${invoice.invoice_id}`}
+                          className="px-3 py-1 text-xs text-white rounded"
+                          style={{ backgroundColor: '#1f3d88' }}
+                          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#163368'}
+                          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#1f3d88'}
+                        >
                           View Details
-                        </button>
+                        </Link>
                         {invoice.status === 'ISSUED' && (
                           <button className="px-3 py-1 text-xs bg-orange-600 text-white rounded hover:bg-orange-700">
                             Raise Dispute
@@ -209,17 +246,17 @@ export default function InvoicesPage() {
                 {invoices[0].line_items.map((item, index) => (
                   <tr key={index}>
                     <td className="px-4 py-3 text-sm font-medium text-gray-900">
-                      {item.service_type}
+                      {item.service_type || 'N/A'}
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-700">{item.direction}</td>
+                    <td className="px-4 py-3 text-sm text-gray-700">{item.direction || 'N/A'}</td>
                     <td className="px-4 py-3 text-sm text-gray-700 text-right">
-                      {item.total_units.toLocaleString()}
+                      {(item.total_units ?? 0).toLocaleString()}
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-700 text-right">
-                      ${item.rate.toFixed(6)}
+                      ${(item.rate ?? 0).toFixed(6)}
                     </td>
                     <td className="px-4 py-3 text-sm font-semibold text-gray-900 text-right">
-                      {formatCurrency(item.amount, invoices[0].currency)}
+                      {formatCurrency(item.amount ?? 0, invoices[0].currency)}
                     </td>
                   </tr>
                 ))}
@@ -229,7 +266,7 @@ export default function InvoicesPage() {
                   <td colSpan={4} className="px-4 py-3 text-sm font-bold text-gray-900 text-right">
                     Total:
                   </td>
-                  <td className="px-4 py-3 text-sm font-bold text-purple-600 text-right">
+                  <td className="px-4 py-3 text-sm font-bold text-right" style={{ color: '#1f3d88' }}>
                     {formatCurrency(invoices[0].total_amount, invoices[0].currency)}
                   </td>
                 </tr>

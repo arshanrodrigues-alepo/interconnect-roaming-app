@@ -67,7 +67,10 @@ export default function AgreementSection({ agreement, partnerId, onEdit }: Agree
           <div className="mt-6">
             <button
               type="button"
-              className="px-6 py-3 bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white rounded-lg font-semibold hover:from-purple-700 hover:to-fuchsia-700 transition"
+              className="px-6 py-3 text-white rounded-lg font-semibold transition"
+            style={{ backgroundImage: 'linear-gradient(to right, #1f3d88, #1f8888)' }}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundImage = 'linear-gradient(to right, #163368, #178080)'}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundImage = 'linear-gradient(to right, #1f3d88, #1f8888)'}
             >
               Create Agreement
             </button>

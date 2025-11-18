@@ -42,7 +42,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-purple-100 to-fuchsia-50 flex items-center justify-center p-4">
+    <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundImage: 'linear-gradient(to bottom right, #e8edf7, #d1dcef, #e0f2f2)' }}>
       <div className="w-full max-w-md">
         {/* Login Card */}
         <div className="bg-white rounded-2xl shadow-2xl p-8">
@@ -71,7 +71,10 @@ export default function LoginPage() {
                 type="text"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent"
+                style={{ outlineColor: '#1f3d88' }}
+                onFocus={(e: any) => e.currentTarget.style.borderColor = '#1f3d88'}
+                onBlur={(e: any) => e.currentTarget.style.borderColor = ''}
                 placeholder="master or your.email@example.com"
                 required
               />
@@ -85,7 +88,10 @@ export default function LoginPage() {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent"
+                style={{ outlineColor: '#1f3d88' }}
+                onFocus={(e: any) => e.currentTarget.style.borderColor = '#1f3d88'}
+                onBlur={(e: any) => e.currentTarget.style.borderColor = ''}
                 placeholder="••••••••"
                 required
               />
@@ -94,7 +100,10 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white py-3 rounded-lg font-semibold hover:from-purple-700 hover:to-fuchsia-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full text-white py-3 rounded-lg font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{ backgroundImage: loading ? 'none' : 'linear-gradient(to right, #1f3d88, #1f8888)', backgroundColor: loading ? '#6b7280' : undefined }}
+              onMouseEnter={(e: any) => !loading && (e.currentTarget.style.backgroundImage = 'linear-gradient(to right, #163368, #178080)')}
+              onMouseLeave={(e: any) => !loading && (e.currentTarget.style.backgroundImage = 'linear-gradient(to right, #1f3d88, #1f8888)')}
             >
               {loading ? 'Signing in...' : 'Sign In'}
             </button>
@@ -104,7 +113,10 @@ export default function LoginPage() {
           <div className="mt-6">
             <button
               onClick={() => setShowDemoCredentials(!showDemoCredentials)}
-              className="w-full text-sm text-purple-600 hover:text-purple-800 font-medium"
+              className="w-full text-sm font-medium"
+              style={{ color: '#1f3d88' }}
+              onMouseEnter={(e: any) => e.currentTarget.style.color = '#163368'}
+              onMouseLeave={(e: any) => e.currentTarget.style.color = '#1f3d88'}
             >
               {showDemoCredentials ? '▼ Hide Demo Credentials' : '▶ Show Demo Credentials'}
             </button>
@@ -125,12 +137,15 @@ export default function LoginPage() {
                   </div>
                   <button
                     onClick={() => quickLogin('master')}
-                    className="w-full text-left px-4 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 rounded-lg transition shadow-lg"
+                    className="w-full text-left px-4 py-3 rounded-lg transition shadow-lg"
+                    style={{ backgroundImage: 'linear-gradient(to right, #1f3d88, #1f8888)' }}
+                    onMouseEnter={(e: any) => e.currentTarget.style.backgroundImage = 'linear-gradient(to right, #163368, #178080)'}
+                    onMouseLeave={(e: any) => e.currentTarget.style.backgroundImage = 'linear-gradient(to right, #1f3d88, #1f8888)'}
                   >
                     <div className="font-bold text-white text-lg">Master Administrator</div>
-                    <div className="text-sm text-purple-100 mt-1">Username: master</div>
-                    <div className="text-sm text-purple-100">Password: admin</div>
-                    <div className="text-xs text-purple-200 mt-2">✨ Full System Access</div>
+                    <div className="text-sm mt-1" style={{ color: '#d1dcef' }}>Username: master</div>
+                    <div className="text-sm" style={{ color: '#d1dcef' }}>Password: admin</div>
+                    <div className="text-xs mt-2" style={{ color: '#a3b9df' }}>✨ Full System Access</div>
                   </button>
                 </div>
 
@@ -142,31 +157,40 @@ export default function LoginPage() {
                   <div className="space-y-2">
                     <button
                       onClick={() => quickLogin('admin@interconnect.com')}
-                      className="w-full text-left px-4 py-3 bg-purple-50 hover:bg-purple-100 rounded-lg transition"
+                      className="w-full text-left px-4 py-3 rounded-lg transition"
+                      style={{ backgroundColor: '#e8edf7' }}
+                      onMouseEnter={(e: any) => e.currentTarget.style.backgroundColor = '#d1dcef'}
+                      onMouseLeave={(e: any) => e.currentTarget.style.backgroundColor = '#e8edf7'}
                     >
-                      <div className="font-medium text-purple-900">System Administrator</div>
-                      <div className="text-xs text-purple-700">admin@interconnect.com</div>
-                      <div className="text-xs text-purple-600 mt-1">Full platform access</div>
+                      <div className="font-medium" style={{ color: '#0a1838' }}>System Administrator</div>
+                      <div className="text-xs" style={{ color: '#163368' }}>admin@interconnect.com</div>
+                      <div className="text-xs mt-1" style={{ color: '#1f3d88' }}>Full platform access</div>
                     </button>
 
                     <button
                       onClick={() => quickLogin('finance@interconnect.com')}
-                      className="w-full text-left px-4 py-3 bg-purple-50 hover:bg-purple-100 rounded-lg transition"
+                      className="w-full text-left px-4 py-3 rounded-lg transition"
+                      style={{ backgroundColor: '#e8edf7' }}
+                      onMouseEnter={(e: any) => e.currentTarget.style.backgroundColor = '#d1dcef'}
+                      onMouseLeave={(e: any) => e.currentTarget.style.backgroundColor = '#e8edf7'}
                     >
-                      <div className="font-medium text-purple-900">Finance Manager</div>
-                      <div className="text-xs text-purple-700">finance@interconnect.com</div>
-                      <div className="text-xs text-purple-600 mt-1">
+                      <div className="font-medium" style={{ color: '#0a1838' }}>Finance Manager</div>
+                      <div className="text-xs" style={{ color: '#163368' }}>finance@interconnect.com</div>
+                      <div className="text-xs mt-1" style={{ color: '#1f3d88' }}>
                         Invoices & Disputes
                       </div>
                     </button>
 
                     <button
                       onClick={() => quickLogin('support@interconnect.com')}
-                      className="w-full text-left px-4 py-3 bg-purple-50 hover:bg-purple-100 rounded-lg transition"
+                      className="w-full text-left px-4 py-3 rounded-lg transition"
+                      style={{ backgroundColor: '#e8edf7' }}
+                      onMouseEnter={(e: any) => e.currentTarget.style.backgroundColor = '#d1dcef'}
+                      onMouseLeave={(e: any) => e.currentTarget.style.backgroundColor = '#e8edf7'}
                     >
-                      <div className="font-medium text-purple-900">Customer Support</div>
-                      <div className="text-xs text-purple-700">support@interconnect.com</div>
-                      <div className="text-xs text-purple-600 mt-1">Dispute Management</div>
+                      <div className="font-medium" style={{ color: '#0a1838' }}>Customer Support</div>
+                      <div className="text-xs" style={{ color: '#163368' }}>support@interconnect.com</div>
+                      <div className="text-xs mt-1" style={{ color: '#1f3d88' }}>Dispute Management</div>
                     </button>
                   </div>
                 </div>
@@ -179,31 +203,40 @@ export default function LoginPage() {
                   <div className="space-y-2">
                     <button
                       onClick={() => quickLogin('roaming@verizon.com')}
-                      className="w-full text-left px-4 py-3 bg-purple-50 hover:bg-purple-100 rounded-lg transition"
+                      className="w-full text-left px-4 py-3 rounded-lg transition"
+                      style={{ backgroundColor: '#e8edf7' }}
+                      onMouseEnter={(e: any) => e.currentTarget.style.backgroundColor = '#d1dcef'}
+                      onMouseLeave={(e: any) => e.currentTarget.style.backgroundColor = '#e8edf7'}
                     >
-                      <div className="font-medium text-purple-900">
+                      <div className="font-medium" style={{ color: '#0a1838' }}>
                         Verizon Wireless (USAVZ1)
                       </div>
-                      <div className="text-xs text-purple-700">roaming@verizon.com</div>
-                      <div className="text-xs text-purple-600 mt-1">Partner Portal Access</div>
+                      <div className="text-xs" style={{ color: '#163368' }}>roaming@verizon.com</div>
+                      <div className="text-xs mt-1" style={{ color: '#1f3d88' }}>Partner Portal Access</div>
                     </button>
 
                     <button
                       onClick={() => quickLogin('wholesale@tmobile.uk')}
-                      className="w-full text-left px-4 py-3 bg-purple-50 hover:bg-purple-100 rounded-lg transition"
+                      className="w-full text-left px-4 py-3 rounded-lg transition"
+                      style={{ backgroundColor: '#e8edf7' }}
+                      onMouseEnter={(e: any) => e.currentTarget.style.backgroundColor = '#d1dcef'}
+                      onMouseLeave={(e: any) => e.currentTarget.style.backgroundColor = '#e8edf7'}
                     >
-                      <div className="font-medium text-purple-900">T-Mobile UK (GBRTM1)</div>
-                      <div className="text-xs text-purple-700">wholesale@tmobile.uk</div>
-                      <div className="text-xs text-purple-600 mt-1">Partner Portal Access</div>
+                      <div className="font-medium" style={{ color: '#0a1838' }}>T-Mobile UK (GBRTM1)</div>
+                      <div className="text-xs" style={{ color: '#163368' }}>wholesale@tmobile.uk</div>
+                      <div className="text-xs mt-1" style={{ color: '#1f3d88' }}>Partner Portal Access</div>
                     </button>
 
                     <button
                       onClick={() => quickLogin('intl@nttdocomo.jp')}
-                      className="w-full text-left px-4 py-3 bg-purple-50 hover:bg-purple-100 rounded-lg transition"
+                      className="w-full text-left px-4 py-3 rounded-lg transition"
+                      style={{ backgroundColor: '#e8edf7' }}
+                      onMouseEnter={(e: any) => e.currentTarget.style.backgroundColor = '#d1dcef'}
+                      onMouseLeave={(e: any) => e.currentTarget.style.backgroundColor = '#e8edf7'}
                     >
-                      <div className="font-medium text-purple-900">NTT Docomo (JPNDO1)</div>
-                      <div className="text-xs text-purple-700">intl@nttdocomo.jp</div>
-                      <div className="text-xs text-purple-600 mt-1">Partner Portal Access</div>
+                      <div className="font-medium" style={{ color: '#0a1838' }}>NTT Docomo (JPNDO1)</div>
+                      <div className="text-xs" style={{ color: '#163368' }}>intl@nttdocomo.jp</div>
+                      <div className="text-xs mt-1" style={{ color: '#1f3d88' }}>Partner Portal Access</div>
                     </button>
                   </div>
                 </div>

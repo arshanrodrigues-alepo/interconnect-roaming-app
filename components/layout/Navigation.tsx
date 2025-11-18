@@ -21,6 +21,7 @@ export default function Navigation() {
     { name: 'Partners', href: '/partners', roles: ['ADMIN', 'FINANCE', 'SUPPORT'] },
     { name: 'TAP', href: '/tap', roles: ['ADMIN', 'FINANCE'] },
     { name: 'Dashboard', href: '/dashboard', roles: ['ADMIN', 'PARTNER', 'FINANCE'] },
+    { name: 'Billing', href: '/billing-cycles', roles: ['ADMIN', 'FINANCE'] },
     { name: 'Invoices', href: '/invoices', roles: ['ADMIN', 'PARTNER', 'FINANCE'] },
     { name: 'Disputes', href: '/disputes', roles: ['ADMIN', 'PARTNER', 'FINANCE', 'SUPPORT'] },
     { name: 'Fraud Monitor', href: '/fraud', roles: ['ADMIN', 'FINANCE'] },
@@ -52,14 +53,21 @@ export default function Navigation() {
       case 'FINANCE':
         return 'bg-green-500';
       case 'SUPPORT':
-        return 'bg-purple-500';
+        return '';
       default:
         return 'bg-gray-500';
     }
   };
 
+  const getRoleBadgeStyle = (role: string) => {
+    if (role === 'SUPPORT') {
+      return { backgroundColor: '#1f3d88' };
+    }
+    return undefined;
+  };
+
   return (
-    <nav className="bg-purple-900 text-white shadow-lg">
+    <nav className="text-white shadow-lg" style={{ backgroundColor: '#1f3d88' }}>
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center space-x-8">
@@ -78,9 +86,10 @@ export default function Navigation() {
                     href={item.href}
                     className={`px-4 py-2 rounded-lg transition-colors ${
                       isActive(item.href)
-                        ? 'bg-purple-700 text-white'
-                        : 'text-purple-100 hover:bg-purple-800'
+                        ? 'text-white'
+                        : 'text-blue-100 hover:bg-black/20'
                     }`}
+                    style={isActive(item.href) ? { backgroundColor: '#163368' } : undefined}
                   >
                     {item.name}
                   </Link>
@@ -94,15 +103,15 @@ export default function Navigation() {
               <div className="relative">
                 <button
                   onClick={() => setShowUserMenu(!showUserMenu)}
-                  className="flex items-center space-x-3 px-4 py-2 rounded-lg hover:bg-purple-800 transition"
+                  className="flex items-center space-x-3 px-4 py-2 rounded-lg hover:bg-black/20 transition"
                 >
                   <div className="text-right">
                     <div className="text-sm font-medium">{user.name}</div>
-                    <div className="text-xs text-purple-300">
+                    <div className="text-xs text-blue-200">
                       {user.partner_name || user.role}
                     </div>
                   </div>
-                  <div className={`w-10 h-10 rounded-full ${getRoleBadgeColor(user.role)} flex items-center justify-center font-bold`}>
+                  <div className={`w-10 h-10 rounded-full ${getRoleBadgeColor(user.role)} flex items-center justify-center font-bold`} style={getRoleBadgeStyle(user.role)}>
                     {user.name.charAt(0)}
                   </div>
                 </button>
@@ -117,6 +126,7 @@ export default function Navigation() {
                           className={`inline-block px-2 py-1 text-xs font-semibold text-white rounded ${getRoleBadgeColor(
                             user.role
                           )}`}
+                          style={getRoleBadgeStyle(user.role)}
                         >
                           {user.role}
                         </span>
@@ -151,7 +161,8 @@ export default function Navigation() {
             ) : (
               <Link
                 href="/login"
-                className="px-6 py-2 bg-white text-purple-900 rounded-lg font-semibold hover:bg-gray-100 transition"
+                className="px-6 py-2 bg-white rounded-lg font-semibold hover:bg-gray-100 transition"
+                style={{ color: '#1f3d88' }}
               >
                 Sign In
               </Link>

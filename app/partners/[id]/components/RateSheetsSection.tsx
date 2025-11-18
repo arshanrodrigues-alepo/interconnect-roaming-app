@@ -93,7 +93,10 @@ export default function RateSheetsSection({
         {onAddRateSheet && (
           <button
             onClick={onAddRateSheet}
-            className="px-6 py-3 bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white rounded-lg font-semibold hover:from-purple-700 hover:to-fuchsia-700 transition flex items-center"
+            className="px-6 py-3 text-white rounded-lg font-semibold transition flex items-center"
+            style={{ backgroundImage: 'linear-gradient(to right, #1f3d88, #1f8888)' }}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundImage = 'linear-gradient(to right, #163368, #178080)'}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundImage = 'linear-gradient(to right, #1f3d88, #1f8888)'}
           >
             <svg
               className="w-5 h-5 mr-2"

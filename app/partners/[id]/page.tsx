@@ -77,7 +77,7 @@ export default function PartnerDetailPage() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto mb-4" style={{ borderColor: '#1f3d88' }}></div>
           <div className="text-gray-600">Loading...</div>
         </div>
       </div>
@@ -88,7 +88,7 @@ export default function PartnerDetailPage() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto mb-4" style={{ borderColor: '#1f3d88' }}></div>
           <div className="text-gray-600">Loading partner details...</div>
         </div>
       </div>
@@ -116,7 +116,10 @@ export default function PartnerDetailPage() {
           <p className="text-red-700 mb-4">{error || 'Partner not found'}</p>
           <Link
             href="/partners"
-            className="inline-block px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
+            className="inline-block px-6 py-3 text-white rounded-lg transition"
+            style={{ backgroundColor: '#1f3d88' }}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#163368'}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#1f3d88'}
           >
             Back to Partners
           </Link>
@@ -130,7 +133,7 @@ export default function PartnerDetailPage() {
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center space-x-2 text-sm text-gray-600 mb-4">
-          <Link href="/partners" className="hover:text-purple-600">
+          <Link href="/partners" className="" style={{ color: 'inherit' }} onMouseEnter={(e) => e.currentTarget.style.color = '#1f3d88'} onMouseLeave={(e) => e.currentTarget.style.color = 'inherit'}>
             Partners
           </Link>
           <span>/</span>
@@ -145,7 +148,10 @@ export default function PartnerDetailPage() {
           <div className="flex space-x-3">
             <Link
               href={`/dashboard?partner=${partner.partner_id}`}
-              className="px-6 py-3 bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white rounded-lg font-semibold hover:from-purple-700 hover:to-fuchsia-700 transition"
+              className="px-6 py-3 text-white rounded-lg font-semibold transition"
+              style={{ backgroundImage: 'linear-gradient(to right, #1f3d88, #1f8888)' }}
+              onMouseEnter={(e) => e.currentTarget.style.backgroundImage = 'linear-gradient(to right, #163368, #178080)'}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundImage = 'linear-gradient(to right, #1f3d88, #1f8888)'}
             >
               View Dashboard
             </Link>
@@ -161,7 +167,7 @@ export default function PartnerDetailPage() {
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Partner Type
             </label>
-            <span className="px-3 py-1 text-xs font-medium rounded-full bg-purple-100 text-purple-800">
+            <span className="px-3 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">
               {partner.partner_type}
             </span>
           </div>
@@ -188,7 +194,10 @@ export default function PartnerDetailPage() {
             </label>
             <a
               href={`mailto:${partner.contact_email}`}
-              className="text-purple-600 hover:text-purple-800"
+              className=""
+              style={{ color: '#1f3d88' }}
+              onMouseEnter={(e) => e.currentTarget.style.color = '#163368'}
+              onMouseLeave={(e) => e.currentTarget.style.color = '#1f3d88'}
             >
               {partner.contact_email}
             </a>
@@ -201,7 +210,10 @@ export default function PartnerDetailPage() {
               </label>
               <a
                 href={`tel:${partner.contact_phone}`}
-                className="text-purple-600 hover:text-purple-800"
+                className=""
+              style={{ color: '#1f3d88' }}
+              onMouseEnter={(e) => e.currentTarget.style.color = '#163368'}
+              onMouseLeave={(e) => e.currentTarget.style.color = '#1f3d88'}
               >
                 {partner.contact_phone}
               </a>
