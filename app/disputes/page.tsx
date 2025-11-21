@@ -115,11 +115,11 @@ export default function DisputesPage() {
                     </span>
                   </div>
                   <div className="text-sm text-gray-600">
-                    Created by: {dispute.created_by || 'Unknown'}
+                    Created by: {dispute.created_by ? dispute.created_by.name : 'Unknown'}
                   </div>
                   {dispute.assigned_to && (
                     <div className="text-sm text-gray-600">
-                      Assigned to: {dispute.assigned_to}
+                      Assigned to: {dispute.assigned_to.name}
                     </div>
                   )}
                 </div>

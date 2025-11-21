@@ -63,7 +63,7 @@ export default function AgreementsPage() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
           <div className="text-gray-600">Loading...</div>
         </div>
       </div>
@@ -80,7 +80,10 @@ export default function AgreementsPage() {
         {user?.role === 'ADMIN' && (
           <button
             onClick={() => setShowCreateForm(true)}
-            className="px-6 py-3 bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white rounded-lg font-semibold hover:from-purple-700 hover:to-fuchsia-700 transition flex items-center"
+            className="px-6 py-3 text-white rounded-lg font-semibold transition flex items-center"
+            style={{ backgroundImage: 'linear-gradient(to right, #1f3d88, #1f8888)' }}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundImage = 'linear-gradient(to right, #163368, #178080)'}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundImage = 'linear-gradient(to right, #1f3d88, #1f8888)'}
           >
             <svg
               className="w-5 h-5 mr-2"
@@ -110,7 +113,7 @@ export default function AgreementsPage() {
             <select
               value={partnerFilter}
               onChange={(e) => setPartnerFilter(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
               <option value="">All Partners</option>
               {partners.map((partner) => (
@@ -128,7 +131,7 @@ export default function AgreementsPage() {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
               <option value="">All Statuses</option>
               <option value="DRAFT">Draft</option>
@@ -146,7 +149,7 @@ export default function AgreementsPage() {
             <select
               value={typeFilter}
               onChange={(e) => setTypeFilter(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
               <option value="">All Types</option>
               <option value="INTERCONNECT">Interconnect</option>
@@ -200,7 +203,7 @@ export default function AgreementsPage() {
                 {agreements.map((agreement) => (
                   <tr key={agreement.agreement_id} className="hover:bg-gray-50">
                     <td className="px-6 py-4">
-                      <span className="text-purple-600 font-medium font-mono text-sm">
+                      <span className="text-blue-600 font-medium font-mono text-sm">
                         {agreement.agreement_id.substring(0, 8)}
                       </span>
                     </td>
@@ -208,7 +211,7 @@ export default function AgreementsPage() {
                       {getPartnerName(agreement.partner_id)}
                     </td>
                     <td className="px-6 py-4">
-                      <span className="px-3 py-1 text-xs font-medium rounded-full bg-purple-100 text-purple-800">
+                      <span className="px-3 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">
                         {agreement.agreement_type}
                       </span>
                     </td>
@@ -234,7 +237,7 @@ export default function AgreementsPage() {
                     <td className="px-6 py-4">
                       <button
                         onClick={() => router.push(`/agreements/${agreement.agreement_id}`)}
-                        className="px-3 py-1 text-xs bg-purple-600 text-white rounded hover:bg-purple-700"
+                        className="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700"
                       >
                         View Details
                       </button>

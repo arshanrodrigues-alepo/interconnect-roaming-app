@@ -8,12 +8,22 @@ interface ParsedRecord {
   [key: string]: any;
 }
 
+export interface TAPMetadata {
+  partner_id?: string;
+  partner_code?: string;
+  partner_name?: string;
+  direction?: 'INBOUND' | 'OUTBOUND';
+  file_date?: string;
+  [key: string]: any;
+}
+
 export interface ParseResult {
   success: boolean;
   records: ParsedRecord[];
   errors: string[];
   format: 'CSV' | 'JSON' | 'UNKNOWN';
   recordCount: number;
+  metadata?: TAPMetadata;
 }
 
 /**
@@ -46,13 +56,30 @@ function parseJSON(content: string): ParseResult {
   try {
     const data = JSON.parse(content);
 
+    // Extract metadata if present
+    let metadata: TAPMetadata | undefined;
+    if (data.metadata) {
+      metadata = {
+        partner_id: data.metadata.partner_id,
+        partner_code: data.metadata.partner_code,
+        partner_name: data.metadata.partner_name,
+        direction: data.metadata.direction,
+        file_date: data.metadata.file_date,
+        ...data.metadata,
+      };
+    }
+
     // Handle both array and single object
     let records: ParsedRecord[] = [];
     if (Array.isArray(data)) {
       records = data;
     } else if (data.records && Array.isArray(data.records)) {
       records = data.records;
-    } else {
+    } else if (data.metadata && !data.records) {
+      // If metadata exists but no records field, return empty
+      records = [];
+    } else if (!data.metadata && !data.records) {
+      // Single record without metadata wrapper
       records = [data];
     }
 
@@ -62,6 +89,7 @@ function parseJSON(content: string): ParseResult {
       errors: [],
       format: 'JSON',
       recordCount: records.length,
+      metadata,
     };
   } catch (error) {
     errors.push(`JSON parse error: ${error instanceof Error ? error.message : 'Unknown error'}`);

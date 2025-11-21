@@ -67,8 +67,8 @@ export default function AdminPortalPage() {
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow-lg p-6 text-white">
-          <div className="text-sm mb-2 text-green-100">Active Agreements</div>
+        <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg p-6 text-white">
+          <div className="text-sm mb-2 text-blue-100">Active Agreements</div>
           <div className="text-4xl font-bold">
             {agreements.filter((a) => a.status === 'ACTIVE').length}
           </div>
@@ -77,14 +77,14 @@ export default function AdminPortalPage() {
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl shadow-lg p-6 text-white">
-          <div className="text-sm mb-2 text-purple-100">Total Revenue</div>
+        <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg p-6 text-white">
+          <div className="text-sm mb-2 text-blue-100">Total Revenue</div>
           <div className="text-3xl font-bold">{formatCurrency(getTotalRevenue())}</div>
-          <div className="text-sm mt-2 text-purple-100">This period</div>
+          <div className="text-sm mt-2 text-blue-100">This period</div>
         </div>
 
-        <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl shadow-lg p-6 text-white">
-          <div className="text-sm mb-2 text-orange-100">Invoices</div>
+        <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg p-6 text-white">
+          <div className="text-sm mb-2 text-blue-100">Invoices</div>
           <div className="text-4xl font-bold">{invoices.length}</div>
           <div className="text-sm mt-2 text-orange-100">
             {invoices.filter((i) => i.status === 'PAID').length} Paid
@@ -184,14 +184,14 @@ export default function AdminPortalPage() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <Link
             href="/partners"
-            className="px-6 py-4 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition text-center font-semibold"
+            className="px-6 py-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-center font-semibold"
           >
             Manage Partners
           </Link>
           <button className="px-6 py-4 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-semibold">
             Create Agreement
           </button>
-          <button className="px-6 py-4 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition font-semibold">
+          <button className="px-6 py-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-semibold">
             Generate Reports
           </button>
           <Link
@@ -239,7 +239,7 @@ export default function AdminPortalPage() {
           </div>
           <div className="flex items-center justify-between py-3">
             <div className="flex items-center space-x-3">
-              <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
               <div>
                 <div className="font-medium text-gray-900">Invoice generated</div>
                 <div className="text-sm text-gray-600">INV-202501-001 - $12,543.50</div>

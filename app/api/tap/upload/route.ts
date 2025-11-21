@@ -7,16 +7,45 @@ import { batchMapToCDR } from '@/lib/services/edr-mapper';
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
-    const partnerId = formData.get('partner_id') as string;
-    const direction = formData.get('direction') as 'INBOUND' | 'OUTBOUND';
+    let partnerId = formData.get('partner_id') as string;
+    let direction = formData.get('direction') as 'INBOUND' | 'OUTBOUND';
     const file = formData.get('file') as File;
 
     if (!file) {
       return NextResponse.json({ error: 'No file provided' }, { status: 400 });
     }
 
+    // Read file content to extract metadata
+    const arrayBuffer = await file.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+
+    // Quick parse to get metadata
+    const quickParse = await parseTAPFile(buffer, file.name);
+
+    // Use metadata from file if available
+    if (quickParse.metadata) {
+      if (quickParse.metadata.partner_id) {
+        partnerId = quickParse.metadata.partner_id;
+      } else if (quickParse.metadata.partner_code) {
+        // Try to find partner by code
+        const partnerByCode = await prisma.partner.findFirst({
+          where: { partnerCode: quickParse.metadata.partner_code },
+        });
+        if (partnerByCode) {
+          partnerId = partnerByCode.id;
+        }
+      }
+
+      if (quickParse.metadata.direction) {
+        direction = quickParse.metadata.direction;
+      }
+    }
+
     if (!partnerId || !direction) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+      return NextResponse.json({
+        error: 'Missing required fields: partner_id and direction must be provided either in form data or file metadata',
+        hint: 'Add a "metadata" object to your JSON file with partner_id or partner_code and direction'
+      }, { status: 400 });
     }
 
     // Check if partner exists
@@ -25,7 +54,11 @@ export async function POST(request: NextRequest) {
     });
 
     if (!partner) {
-      return NextResponse.json({ error: 'Partner not found' }, { status: 404 });
+      return NextResponse.json({
+        error: 'Partner not found',
+        partner_id: partnerId,
+        hint: 'Make sure the partner_id or partner_code in your file metadata exists in the database'
+      }, { status: 404 });
     }
 
     // Validate file size
@@ -52,18 +85,21 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Process file asynchronously
-    processFileAsync(file, tapFile.id, partnerId, direction);
+    // Process file asynchronously (reuse the buffer we already read)
+    processFileAsync(buffer, file.name, tapFile.id, partnerId, direction);
 
     // Transform response
     const response = {
       file_id: tapFile.id,
       partner_id: tapFile.partnerId,
+      partner_name: partner.partnerName,
+      partner_code: partner.partnerCode,
       filename: tapFile.filename,
       file_size_bytes: Number(tapFile.fileSizeBytes), // Convert BigInt to Number
       direction: tapFile.direction,
       status: tapFile.status,
       upload_timestamp: tapFile.uploadTimestamp.toISOString(),
+      metadata_source: quickParse.metadata ? 'file' : 'form_data',
     };
 
     return NextResponse.json(response, { status: 202 });
@@ -90,7 +126,8 @@ export async function POST(request: NextRequest) {
  * Process TAP file asynchronously
  */
 async function processFileAsync(
-  file: File,
+  buffer: Buffer,
+  filename: string,
   tapFileId: string,
   partnerId: string,
   direction: 'INBOUND' | 'OUTBOUND'
@@ -104,12 +141,8 @@ async function processFileAsync(
       },
     });
 
-    // Read file content
-    const arrayBuffer = await file.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
-
     // Parse file
-    const parseResult = await parseTAPFile(buffer, file.name);
+    const parseResult = await parseTAPFile(buffer, filename);
 
     if (!parseResult.success || parseResult.records.length === 0) {
       await prisma.tAPFile.update({

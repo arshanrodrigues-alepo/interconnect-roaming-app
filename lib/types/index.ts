@@ -10,10 +10,11 @@ export type UnitOfMeasure = 'SECONDS' | 'MESSAGE' | 'MB' | 'SESSION';
 export type Direction = 'INBOUND' | 'OUTBOUND';
 export type RoundingRule = 'UP' | 'DOWN' | 'NEAREST';
 export type ProcessingStatus = 'PENDING' | 'RATED' | 'SETTLED' | 'DISPUTED';
-export type InvoiceStatus = 'DRAFT' | 'ISSUED' | 'PAID' | 'DISPUTED' | 'CANCELLED';
+export type InvoiceStatus = 'DRAFT' | 'ISSUED' | 'PAID' | 'PARTIALLY_PAID' | 'DISPUTED' | 'CANCELLED' | 'OVERDUE';
 export type DisputeType = 'BILLING' | 'TECHNICAL' | 'QUALITY' | 'OTHER';
 export type DisputeStatus = 'OPEN' | 'IN_REVIEW' | 'RESOLVED' | 'REJECTED' | 'ESCALATED';
-export type BillingCycle = 'MONTHLY' | 'QUARTERLY' | 'CUSTOM';
+export type BillingFrequency = 'MONTHLY' | 'QUARTERLY' | 'CUSTOM';
+export type BillingCycleStatus = 'OPEN' | 'PROCESSING' | 'INVOICED' | 'CLOSED' | 'DISPUTED' | 'CANCELLED';
 export type TAPFileStatus = 'UPLOADED' | 'PARSING' | 'PARSED' | 'RATED' | 'ERROR';
 export type AnomalyType = 'UNUSUAL_TRAFFIC_VOLUME' | 'HIGH_COST_DESTINATION' | 'VELOCITY_ANOMALY' | 'SUCCESS_RATE_DROP' | 'UNUSUAL_CALL_DURATION' | 'LATE_NIGHT_TRAFFIC';
 export type AnomalySeverity = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
@@ -47,7 +48,7 @@ export interface Agreement {
   contract_file_url?: string;
   raex_form_url?: string;
   currency: string;
-  billing_cycle: BillingCycle;
+  billing_cycle: BillingFrequency;
   created_at: string;
   updated_at: string;
 }
@@ -142,15 +143,24 @@ export interface Invoice {
   invoice_id: string;
   invoice_number: string;
   partner_id: string;
+  partner_name?: string;
+  partner_code?: string;
   billing_period_start: string;
   billing_period_end: string;
+  subtotal: number;
+  tax_amount: number;
   total_amount: number;
   currency: string;
   status: InvoiceStatus;
   invoice_date: string;
   due_date?: string;
+  payment_date?: string | null;
   pdf_url?: string;
   line_items?: InvoiceLineItem[];
+  notes?: string | null;
+  created_at?: string;
+  updated_at?: string;
+  has_disputes?: boolean;
 }
 
 export interface InvoiceLineItem {
@@ -161,7 +171,50 @@ export interface InvoiceLineItem {
   amount: number;
 }
 
+// 3.1.6.1 Payment Entity
+export interface Payment {
+  payment_id: string;
+  payment_number: string;
+  invoice_id: string;
+  invoice_number?: string;
+  partner_id?: string;
+  partner_name?: string;
+  partner_code?: string;
+  amount: number;
+  currency: string;
+  payment_date: string;
+  payment_method: PaymentMethod;
+  reference_number?: string | null;
+  status: PaymentStatus;
+  notes?: string | null;
+  created_at: string;
+  created_by?: string | null;
+}
+
+export type PaymentMethod =
+  | 'BANK_TRANSFER'
+  | 'WIRE_TRANSFER'
+  | 'CREDIT_CARD'
+  | 'DEBIT_CARD'
+  | 'CHEQUE'
+  | 'NETTING'
+  | 'OTHER';
+
+export type PaymentStatus =
+  | 'PENDING'
+  | 'CONFIRMED'
+  | 'CLEARED'
+  | 'FAILED'
+  | 'REVERSED'
+  | 'CANCELLED';
+
 // 3.1.7 Dispute Entity
+export interface DisputeUser {
+  id: string;
+  name: string;
+  email: string;
+}
+
 export interface Dispute {
   dispute_id: string;
   dispute_number: string;
@@ -174,8 +227,12 @@ export interface Dispute {
   resolution?: string;
   created_at: string;
   resolved_at?: string;
-  created_by?: string;
-  assigned_to?: string;
+  created_by?: DisputeUser | null;
+  assigned_to?: DisputeUser | null;
+  priority?: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+  partner_name?: string;
+  partner_code?: string;
+  invoice_number?: string;
 }
 
 // Anomaly Detection Entity
@@ -320,4 +377,41 @@ export interface EDRSchema {
   direction: Direction;
   schema_definition: Record<string, any>; // JSON schema
   created_at: string;
+}
+
+// Billing Cycle Entity
+export interface BillingCycle {
+  id: string;
+  partner_id: string;
+  partner?: {
+    partner_code: string;
+    partner_name: string;
+    country_code: string;
+    contact_email?: string;
+  };
+  cycle_number: number;
+  period_start: string;
+  period_end: string;
+  cut_off_date: string;
+  due_date: string;
+  status: BillingCycleStatus;
+  total_voice_minutes?: number;
+  total_sms_count?: number;
+  total_data_mb?: number;
+  total_charges?: number;
+  total_cost?: number;
+  margin?: number;
+  currency: string;
+  invoice_id?: string;
+  invoice?: {
+    invoice_number: string;
+    status: InvoiceStatus;
+    total_amount: number;
+    invoice_date: string;
+    due_date: string;
+    paid_date?: string;
+  };
+  closed_at?: string;
+  created_at: string;
+  updated_at: string;
 }

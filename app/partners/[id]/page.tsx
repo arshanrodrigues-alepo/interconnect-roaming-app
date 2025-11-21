@@ -146,15 +146,11 @@ export default function PartnerDetailPage() {
             <p className="text-gray-600 mt-2">Partner Code: {partner.partner_code}</p>
           </div>
           <div className="flex space-x-3">
-            <Link
-              href={`/dashboard?partner=${partner.partner_id}`}
-              className="px-6 py-3 text-white rounded-lg font-semibold transition"
-              style={{ backgroundImage: 'linear-gradient(to right, #1f3d88, #1f8888)' }}
-              onMouseEnter={(e) => e.currentTarget.style.backgroundImage = 'linear-gradient(to right, #163368, #178080)'}
-              onMouseLeave={(e) => e.currentTarget.style.backgroundImage = 'linear-gradient(to right, #1f3d88, #1f8888)'}
+            <button
+              className="px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition"
             >
-              View Dashboard
-            </Link>
+              Suspend Partner
+            </button>
           </div>
         </div>
       </div>

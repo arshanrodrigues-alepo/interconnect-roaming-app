@@ -109,7 +109,10 @@ export default function AddRateModal({
                       service_type: e.target.value as ServiceType,
                     })
                   }
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent"
+                  style={{ focusRingColor: '#1f3d88' }}
+                  onFocus={(e: any) => e.currentTarget.style.borderColor = '#1f3d88'}
+                  onBlur={(e: any) => e.currentTarget.style.borderColor = ''}
                 >
                   <option value="VOICE">Voice</option>
                   <option value="SMS">SMS</option>
@@ -131,7 +134,10 @@ export default function AddRateModal({
                       direction: e.target.value as Direction,
                     })
                   }
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent"
+                  style={{ focusRingColor: '#1f3d88' }}
+                  onFocus={(e: any) => e.currentTarget.style.borderColor = '#1f3d88'}
+                  onBlur={(e: any) => e.currentTarget.style.borderColor = ''}
                 >
                   <option value="INBOUND">Inbound</option>
                   <option value="OUTBOUND">Outbound</option>
@@ -171,7 +177,10 @@ export default function AddRateModal({
                   onChange={(e) =>
                     setFormData({ ...formData, rate_per_unit: e.target.value })
                   }
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent"
+                  style={{ focusRingColor: '#1f3d88' }}
+                  onFocus={(e: any) => e.currentTarget.style.borderColor = '#1f3d88'}
+                  onBlur={(e: any) => e.currentTarget.style.borderColor = ''}
                   placeholder="0.0150"
                 />
                 <p className="mt-1 text-sm text-gray-500">
@@ -193,7 +202,10 @@ export default function AddRateModal({
                   onChange={(e) =>
                     setFormData({ ...formData, currency: e.target.value })
                   }
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent"
+                  style={{ focusRingColor: '#1f3d88' }}
+                  onFocus={(e: any) => e.currentTarget.style.borderColor = '#1f3d88'}
+                  onBlur={(e: any) => e.currentTarget.style.borderColor = ''}
                 >
                   <option value="USD">USD</option>
                   <option value="EUR">EUR</option>
@@ -215,7 +227,10 @@ export default function AddRateModal({
                   onChange={(e) =>
                     setFormData({ ...formData, minimum_charge: e.target.value })
                   }
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent"
+                  style={{ focusRingColor: '#1f3d88' }}
+                  onFocus={(e: any) => e.currentTarget.style.borderColor = '#1f3d88'}
+                  onBlur={(e: any) => e.currentTarget.style.borderColor = ''}
                   placeholder="0.50"
                 />
               </div>
@@ -261,7 +276,10 @@ export default function AddRateModal({
             <button
               type="submit"
               disabled={loading}
-              className="px-6 py-3 bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white rounded-lg font-semibold hover:from-purple-700 hover:to-fuchsia-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-6 py-3 text-white rounded-lg font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{ backgroundImage: 'linear-gradient(to right, #1f3d88, #1f8888)' }}
+              onMouseEnter={(e) => !loading && (e.currentTarget.style.backgroundImage = 'linear-gradient(to right, #163368, #178080)')}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundImage = 'linear-gradient(to right, #1f3d88, #1f8888)'}
             >
               {loading ? 'Adding...' : 'Add Rate'}
             </button>

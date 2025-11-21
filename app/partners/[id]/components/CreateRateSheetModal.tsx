@@ -95,7 +95,10 @@ export default function CreateRateSheetModal({
                 onChange={(e) =>
                   setFormData({ ...formData, rate_sheet_name: e.target.value })
                 }
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent"
+                style={{ focusRingColor: '#1f3d88' }}
+                onFocus={(e: any) => e.currentTarget.style.borderColor = '#1f3d88'}
+                onBlur={(e: any) => e.currentTarget.style.borderColor = ''}
                 placeholder="e.g., Standard Rates Q1 2025"
               />
             </div>
@@ -112,7 +115,10 @@ export default function CreateRateSheetModal({
                   onChange={(e) =>
                     setFormData({ ...formData, effective_date: e.target.value })
                   }
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent"
+                style={{ focusRingColor: '#1f3d88' }}
+                onFocus={(e: any) => e.currentTarget.style.borderColor = '#1f3d88'}
+                onBlur={(e: any) => e.currentTarget.style.borderColor = ''}
                 />
               </div>
 
@@ -126,7 +132,10 @@ export default function CreateRateSheetModal({
                   onChange={(e) =>
                     setFormData({ ...formData, expiry_date: e.target.value })
                   }
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent"
+                style={{ focusRingColor: '#1f3d88' }}
+                onFocus={(e: any) => e.currentTarget.style.borderColor = '#1f3d88'}
+                onBlur={(e: any) => e.currentTarget.style.borderColor = ''}
                 />
               </div>
             </div>
@@ -139,7 +148,8 @@ export default function CreateRateSheetModal({
                 onChange={(e) =>
                   setFormData({ ...formData, is_active: e.target.checked })
                 }
-                className="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
+                className="w-4 h-4 border-gray-300 rounded"
+                style={{ accentColor: '#1f3d88' }}
               />
               <label htmlFor="is_active" className="ml-2 text-sm text-gray-700">
                 Set as active rate sheet
@@ -159,7 +169,10 @@ export default function CreateRateSheetModal({
             <button
               type="submit"
               disabled={loading}
-              className="px-6 py-3 bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white rounded-lg font-semibold hover:from-purple-700 hover:to-fuchsia-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-6 py-3 text-white rounded-lg font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{ backgroundImage: 'linear-gradient(to right, #1f3d88, #1f8888)' }}
+              onMouseEnter={(e) => !loading && (e.currentTarget.style.backgroundImage = 'linear-gradient(to right, #163368, #178080)')}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundImage = 'linear-gradient(to right, #1f3d88, #1f8888)'}
             >
               {loading ? 'Creating...' : 'Create Rate Sheet'}
             </button>

@@ -15,20 +15,26 @@ async function main() {
   // Clear existing data (in development only)
   if (process.env.NODE_ENV === 'development') {
     console.log('🗑️  Clearing existing data...');
-    await prisma.tAPRecord.deleteMany();
-    await prisma.tAPFile.deleteMany();
-    await prisma.testCall.deleteMany();
-    await prisma.anomaly.deleteMany();
-    await prisma.dispute.deleteMany();
-    await prisma.invoice.deleteMany();
-    await prisma.rate.deleteMany();
-    await prisma.rateSheet.deleteMany();
-    await prisma.ratePlan.deleteMany();
-    await prisma.rAEXForm.deleteMany();
-    await prisma.agreement.deleteMany();
-    await prisma.user.deleteMany();
-    await prisma.partner.deleteMany();
-    await prisma.policyDocument.deleteMany();
+    try {
+      await prisma.tAPRecord.deleteMany();
+      await prisma.tAPFile.deleteMany();
+      await prisma.testCall.deleteMany();
+      await prisma.anomaly.deleteMany();
+      await prisma.dispute.deleteMany();
+      await prisma.invoice.deleteMany();
+      await prisma.rate.deleteMany();
+      await prisma.rateSheet.deleteMany();
+      await prisma.ratePlan.deleteMany();
+      await prisma.rAEXForm.deleteMany();
+      await prisma.agreement.deleteMany();
+      await prisma.user.deleteMany();
+      await prisma.partner.deleteMany();
+      await prisma.policyDocument.deleteMany();
+      await prisma.billingCycle.deleteMany();
+    } catch (error) {
+      // Tables may not exist yet after reset, continue
+      console.log('   (Skipping cleanup - fresh database)');
+    }
   }
 
   // ============================================================================

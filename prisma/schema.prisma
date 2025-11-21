@@ -61,16 +61,25 @@ model Partner {
   updatedAt    DateTime      @updatedAt @map("updated_at")
 
   // Relations
-  agreements     Agreement[]
-  rateSheets     RateSheet[]
-  tapFiles       TAPFile[]
-  tapRecords     TAPRecord[]
-  billingCycles  BillingCycle[]
-  invoices       Invoice[]
-  disputes       Dispute[]
-  anomalies      Anomaly[]
-  testCalls      TestCall[]
-  users          User[]
+  agreements       Agreement[]
+  rateSheets       RateSheet[]
+  tapFiles         TAPFile[]
+  tapRecords       TAPRecord[]
+  billingCycles    BillingCycle[]
+  invoices         Invoice[]
+  disputes         Dispute[]
+  anomalies        Anomaly[]
+  testCalls        TestCall[]
+  users            User[]
+  discounts        Discount[]
+  reconciliations  Reconciliation[]
+
+  // Advanced features relations
+  carrierPricelists    CarrierPricelist[]    @relation("CarrierPricelists")
+  creditProfile        CreditProfile?        @relation("CreditProfile")
+  volumeCommitments    VolumeCommitment[]    @relation("VolumeCommitments")
+  reconciliationBatches ReconciliationBatch[] @relation("ReconciliationBatches")
+  qosMetrics           QoSMetric[]           @relation("QoSMetrics")
 
   @@index([partnerCode])
   @@index([status])
@@ -351,17 +360,20 @@ model BillingCycle {
   status          BillingCycleStatus @default(OPEN)
 
   // Traffic summary
-  totalTAPFiles   Int               @default(0) @map("total_tap_files")
-  totalRecords    Int               @default(0) @map("total_records")
-  totalMinutes    Int               @default(0) @map("total_minutes")
-  totalSMS        Int               @default(0) @map("total_sms")
-  totalDataMB     Decimal           @default(0) @map("total_data_mb") @db.Decimal(15, 2)
+  totalTAPFiles      Int               @default(0) @map("total_tap_files")
+  totalRecords       Int               @default(0) @map("total_records")
+  totalVoiceMinutes  Int               @default(0) @map("total_voice_minutes")
+  totalSmsCount      Int               @default(0) @map("total_sms_count")
+  totalDataMb        Decimal           @default(0) @map("total_data_mb") @db.Decimal(15, 2)
 
   // Financial summary
-  subtotal        Decimal           @default(0) @db.Decimal(15, 4)
-  discounts       Decimal           @default(0) @db.Decimal(15, 4)
-  taxes           Decimal           @default(0) @db.Decimal(15, 4)
-  totalAmount     Decimal           @default(0) @map("total_amount") @db.Decimal(15, 4)
+  totalCharges    Decimal           @default(0) @map("total_charges") @db.Decimal(15, 2)
+  totalCost       Decimal           @default(0) @map("total_cost") @db.Decimal(15, 2)
+  margin          Decimal           @default(0) @db.Decimal(15, 2)
+  subtotal        Decimal           @default(0) @db.Decimal(15, 2)
+  discounts       Decimal           @default(0) @db.Decimal(15, 2)
+  taxes           Decimal           @default(0) @db.Decimal(15, 2)
+  totalAmount     Decimal           @default(0) @map("total_amount") @db.Decimal(15, 2)
   currency        String            @default("USD") @db.VarChar(3)
 
   // Links
@@ -374,6 +386,9 @@ model BillingCycle {
   updatedAt       DateTime          @updatedAt @map("updated_at")
   closedAt        DateTime?         @map("closed_at")
   closedBy        String?           @map("closed_by") @db.Uuid
+
+  // Relations
+  reconciliations Reconciliation[]
 
   @@index([partnerId])
   @@index([cycleNumber])
@@ -425,6 +440,7 @@ model Invoice {
 
   // Relations
   disputes            Dispute[]
+  payments            Payment[]
 
   @@index([partnerId])
   @@index([status])
@@ -437,9 +453,196 @@ enum InvoiceStatus {
   DRAFT
   ISSUED
   PAID
+  PARTIALLY_PAID
   DISPUTED
   CANCELLED
   OVERDUE
+}
+
+// ============================================================================
+// PAYMENT MANAGEMENT
+// ============================================================================
+
+model Payment {
+  id              String        @id @default(uuid()) @db.Uuid
+  paymentNumber   String        @unique @map("payment_number") @db.VarChar(50)
+
+  invoiceId       String        @map("invoice_id") @db.Uuid
+  invoice         Invoice       @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  amount          Decimal       @db.Decimal(15, 2)
+  currency        String        @db.VarChar(3)
+
+  paymentDate     DateTime      @map("payment_date") @db.Date
+  paymentMethod   PaymentMethod @map("payment_method")
+  referenceNumber String?       @map("reference_number") @db.VarChar(100)
+
+  status          PaymentStatus @default(PENDING)
+  notes           String?       @db.Text
+
+  createdAt       DateTime      @default(now()) @map("created_at")
+  createdBy       String?       @map("created_by") @db.Uuid
+
+  @@index([invoiceId])
+  @@index([paymentDate])
+  @@index([status])
+  @@map("payments")
+}
+
+enum PaymentMethod {
+  BANK_TRANSFER
+  WIRE_TRANSFER
+  CREDIT_CARD
+  DEBIT_CARD
+  CHEQUE
+  NETTING
+  OTHER
+}
+
+enum PaymentStatus {
+  PENDING
+  CONFIRMED
+  CLEARED
+  FAILED
+  REVERSED
+  CANCELLED
+}
+
+// ============================================================================
+// DISCOUNT MANAGEMENT
+// ============================================================================
+
+model Discount {
+  id            String        @id @default(uuid()) @db.Uuid
+  discountCode  String        @unique @map("discount_code") @db.VarChar(50)
+
+  partnerId     String?       @map("partner_id") @db.Uuid
+  partner       Partner?      @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+
+  discountType  DiscountType  @map("discount_type")
+  discountValue Decimal       @map("discount_value") @db.Decimal(10, 4)
+  discountUnit  DiscountUnit  @map("discount_unit")
+
+  description   String?       @db.Text
+
+  // Conditions
+  minCharges    Decimal?      @map("min_charges") @db.Decimal(15, 2)
+  maxDiscount   Decimal?      @map("max_discount") @db.Decimal(15, 2)
+
+  startDate     DateTime      @map("start_date") @db.Date
+  endDate       DateTime?     @map("end_date") @db.Date
+
+  isActive      Boolean       @default(true) @map("is_active")
+
+  createdAt     DateTime      @default(now()) @map("created_at")
+  updatedAt     DateTime      @updatedAt @map("updated_at")
+
+  @@index([partnerId])
+  @@index([discountType])
+  @@index([isActive])
+  @@map("discounts")
+}
+
+enum DiscountType {
+  VOLUME
+  PROMOTIONAL
+  EARLY_PAYMENT
+  LOYALTY
+  COMMITMENT
+  CUSTOM
+}
+
+enum DiscountUnit {
+  PERCENTAGE
+  FLAT_AMOUNT
+}
+
+// ============================================================================
+// RECONCILIATION MANAGEMENT
+// ============================================================================
+
+model Reconciliation {
+  id                    String                 @id @default(uuid()) @db.Uuid
+  reconciliationNumber  String                 @unique @map("reconciliation_number") @db.VarChar(50)
+
+  partnerId             String                 @map("partner_id") @db.Uuid
+  partner               Partner                @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+
+  billingCycleId        String?                @map("billing_cycle_id") @db.Uuid
+  billingCycle          BillingCycle?          @relation(fields: [billingCycleId], references: [id], onDelete: SetNull)
+
+  periodStart           DateTime               @map("period_start") @db.Date
+  periodEnd             DateTime               @map("period_end") @db.Date
+
+  // Our side
+  ourInvoiceId          String?                @map("our_invoice_id") @db.Uuid
+  ourAmount             Decimal                @map("our_amount") @db.Decimal(15, 2)
+  ourRecordCount        Int                    @map("our_record_count")
+
+  // Partner's side
+  theirInvoiceNumber    String?                @map("their_invoice_number") @db.VarChar(50)
+  theirAmount           Decimal                @map("their_amount") @db.Decimal(15, 2)
+  theirRecordCount      Int                    @map("their_record_count")
+
+  // Variance
+  amountDifference      Decimal                @map("amount_difference") @db.Decimal(15, 2)
+  differencePercentage  Decimal                @map("difference_percentage") @db.Decimal(6, 3)
+  recordCountDifference Int                    @map("record_count_difference")
+
+  status                ReconciliationStatus   @default(PENDING)
+
+  notes                 String?                @db.Text
+  discrepancies         ReconciliationItem[]
+
+  resolvedAt            DateTime?              @map("resolved_at")
+  resolvedBy            String?                @map("resolved_by") @db.Uuid
+
+  createdAt             DateTime               @default(now()) @map("created_at")
+  updatedAt             DateTime               @updatedAt @map("updated_at")
+
+  @@index([partnerId])
+  @@index([billingCycleId])
+  @@index([status])
+  @@map("reconciliations")
+}
+
+model ReconciliationItem {
+  id                String          @id @default(uuid()) @db.Uuid
+  reconciliationId  String          @map("reconciliation_id") @db.Uuid
+  reconciliation    Reconciliation  @relation(fields: [reconciliationId], references: [id], onDelete: Cascade)
+
+  category          String          @db.VarChar(50) // RATE_MISMATCH, VOLUME_DIFFERENCE, MISSING_RECORDS
+  description       String          @db.Text
+
+  ourValue          Decimal?        @map("our_value") @db.Decimal(15, 4)
+  theirValue        Decimal?        @map("their_value") @db.Decimal(15, 4)
+  impact            Decimal         @db.Decimal(15, 2) // Financial impact
+
+  status            ItemStatus      @default(IDENTIFIED)
+  resolution        String?         @db.Text
+
+  createdAt         DateTime        @default(now()) @map("created_at")
+
+  @@index([reconciliationId])
+  @@map("reconciliation_items")
+}
+
+enum ReconciliationStatus {
+  PENDING
+  IN_PROGRESS
+  MATCHED
+  DISCREPANCY
+  RESOLVED
+  DISPUTED
+  ACCEPTED
+}
+
+enum ItemStatus {
+  IDENTIFIED
+  INVESTIGATING
+  RESOLVED
+  ACCEPTED
+  REJECTED
 }
 
 // ============================================================================
@@ -686,4 +889,402 @@ enum PolicyDocType {
   SMS_REVENUE_COMMITMENT
   TAX_POLICY
   CUSTOM
+}
+
+// ============================================================================
+// LEAST COST ROUTING (LCR) MODULE
+// ============================================================================
+
+model CarrierPricelist {
+  id                  String              @id @default(uuid()) @db.Uuid
+  carrierId           String              @map("carrier_id") @db.Uuid
+  // Note: carrierId references Partner (carrier is a type of partner)
+  carrier             Partner             @relation("CarrierPricelists", fields: [carrierId], references: [id], onDelete: Cascade)
+
+  effectiveDate       DateTime            @map("effective_date") @db.Date
+  expiryDate          DateTime?           @map("expiry_date") @db.Date
+  noticePeriodDays    Int                 @map("notice_period_days")
+  updateType          PricelistUpdateType @map("update_type")
+
+  sourceFileUrl       String?             @map("source_file_url") @db.Text
+  status              PricelistStatus     @default(PENDING)
+  confirmationSent    Boolean             @default(false) @map("confirmation_sent")
+
+  createdAt           DateTime            @default(now()) @map("created_at")
+  updatedAt           DateTime            @updatedAt @map("updated_at")
+
+  // Relations
+  rates               CarrierRate[]
+
+  @@index([carrierId])
+  @@index([status])
+  @@index([effectiveDate])
+  @@map("carrier_pricelists")
+}
+
+model CarrierRate {
+  id                  String           @id @default(uuid()) @db.Uuid
+  pricelistId         String           @map("pricelist_id") @db.Uuid
+  pricelist           CarrierPricelist @relation(fields: [pricelistId], references: [id], onDelete: Cascade)
+
+  destinationCode     String           @map("destination_code") @db.VarChar(20)
+  destinationName     String           @map("destination_name") @db.VarChar(255)
+
+  ratePerMinute       Decimal          @map("rate_per_minute") @db.Decimal(10, 6)
+  billingIncrement    BillingIncrement @map("billing_increment")
+
+  asrPercentage       Decimal?         @map("asr_percentage") @db.Decimal(5, 2)
+  acdSeconds          Int?             @map("acd_seconds")
+
+  peakRate            Decimal?         @map("peak_rate") @db.Decimal(10, 6)
+  offpeakRate         Decimal?         @map("offpeak_rate") @db.Decimal(10, 6)
+
+  createdAt           DateTime         @default(now()) @map("created_at")
+
+  @@index([pricelistId])
+  @@index([destinationCode])
+  @@map("carrier_rates")
+}
+
+enum PricelistUpdateType {
+  FULL
+  PARTIAL
+  DELTA
+}
+
+enum PricelistStatus {
+  PENDING
+  VALIDATED
+  ACTIVE
+  EXPIRED
+  REJECTED
+}
+
+enum BillingIncrement {
+  PER_SECOND
+  PER_MINUTE
+  SIXTY_SIXTY  // 60/60 rounding
+}
+
+// ============================================================================
+// CREDIT CONTROL & COLLECTIONS
+// ============================================================================
+
+model CreditProfile {
+  id                    String        @id @default(uuid()) @db.Uuid
+  partnerId             String        @unique @map("partner_id") @db.Uuid
+  partner               Partner       @relation("CreditProfile", fields: [partnerId], references: [id], onDelete: Cascade)
+
+  creditLimit           Decimal       @map("credit_limit") @db.Decimal(15, 2)
+  paymentTermsDays      Int           @map("payment_terms_days")
+
+  surchargeCategory     String        @map("surcharge_category") @db.VarChar(50)
+  surchargeRate         Decimal       @map("surcharge_rate") @db.Decimal(5, 2)
+  surchargeTriggerDays  Int           @map("surcharge_trigger_days")
+
+  bankGuaranteeRequired Boolean       @default(false) @map("bank_guarantee_required")
+  bankGuaranteeAmount   Decimal?      @map("bank_guarantee_amount") @db.Decimal(15, 2)
+  bankGuaranteeExpiry   DateTime?     @map("bank_guarantee_expiry") @db.Date
+
+  status                CreditStatus  @default(ACTIVE)
+
+  createdAt             DateTime      @default(now()) @map("created_at")
+  updatedAt             DateTime      @updatedAt @map("updated_at")
+
+  @@index([partnerId])
+  @@index([status])
+  @@map("credit_profiles")
+}
+
+enum CreditStatus {
+  ACTIVE
+  SUSPENDED
+  BLOCKED
+  UNDER_REVIEW
+}
+
+// ============================================================================
+// VOLUME COMMITMENTS & DISCOUNTING
+// ============================================================================
+
+model VolumeCommitment {
+  id                      String           @id @default(uuid()) @db.Uuid
+  partnerId               String           @map("partner_id") @db.Uuid
+  partner                 Partner          @relation("VolumeCommitments", fields: [partnerId], references: [id], onDelete: Cascade)
+
+  destinationGroupId      String?          @map("destination_group_id") @db.Uuid
+
+  commitmentType          CommitmentType   @map("commitment_type")
+  committedVolumeMinutes  BigInt?          @map("committed_volume_minutes")
+  committedRevenueAmount  Decimal?         @map("committed_revenue_amount") @db.Decimal(15, 2)
+
+  startDate               DateTime         @map("start_date") @db.Date
+  endDate                 DateTime         @map("end_date") @db.Date
+
+  penaltyRate             Decimal?         @map("penalty_rate") @db.Decimal(5, 2)
+
+  discountSchemeId        String?          @map("discount_scheme_id") @db.Uuid
+  discountScheme          DiscountScheme?  @relation(fields: [discountSchemeId], references: [id], onDelete: SetNull)
+
+  status                  CommitmentStatus @default(ACTIVE)
+
+  createdAt               DateTime         @default(now()) @map("created_at")
+  updatedAt               DateTime         @updatedAt @map("updated_at")
+
+  @@index([partnerId])
+  @@index([status])
+  @@index([startDate, endDate])
+  @@map("volume_commitments")
+}
+
+model DiscountScheme {
+  id              String         @id @default(uuid()) @db.Uuid
+  schemeName      String         @map("scheme_name") @db.VarChar(255)
+
+  discountType    SchemeType     @map("discount_type")
+  appliesTo       AppliesTo      @map("applies_to")
+
+  validFrom       DateTime       @map("valid_from") @db.Date
+  validTo         DateTime?      @map("valid_to") @db.Date
+
+  status          SchemeStatus   @default(ACTIVE)
+
+  createdAt       DateTime       @default(now()) @map("created_at")
+  updatedAt       DateTime       @updatedAt @map("updated_at")
+
+  // Relations
+  tiers           DiscountTier[]
+  commitments     VolumeCommitment[]
+
+  @@index([status])
+  @@index([validFrom, validTo])
+  @@map("discount_schemes")
+}
+
+model DiscountTier {
+  id                  String         @id @default(uuid()) @db.Uuid
+  schemeId            String         @map("scheme_id") @db.Uuid
+  scheme              DiscountScheme @relation(fields: [schemeId], references: [id], onDelete: Cascade)
+
+  fromVolume          BigInt?        @map("from_volume")
+  toVolume            BigInt?        @map("to_volume")
+
+  discountPercentage  Decimal        @map("discount_percentage") @db.Decimal(5, 2)
+  rateAdjustment      Decimal?       @map("rate_adjustment") @db.Decimal(10, 6)
+
+  createdAt           DateTime       @default(now()) @map("created_at")
+
+  @@index([schemeId])
+  @@map("discount_tiers")
+}
+
+enum CommitmentType {
+  MONTHLY
+  QUARTERLY
+  ANNUAL
+  CUSTOM
+}
+
+enum CommitmentStatus {
+  ACTIVE
+  EXPIRED
+  TERMINATED
+  BREACHED
+}
+
+enum SchemeType {
+  TIERED_RATE
+  FIXED_RATE
+  REBATE
+  VOLUME_BASED
+}
+
+enum AppliesTo {
+  VOLUME
+  REVENUE
+  BOTH
+}
+
+enum SchemeStatus {
+  ACTIVE
+  EXPIRED
+  SUSPENDED
+}
+
+// ============================================================================
+// ADVANCED RECONCILIATION (Extensions)
+// ============================================================================
+
+model ReconciliationBatch {
+  id                 String                @id @default(uuid()) @db.Uuid
+  partnerId          String                @map("partner_id") @db.Uuid
+  partner            Partner               @relation("ReconciliationBatches", fields: [partnerId], references: [id], onDelete: Cascade)
+
+  reconciliationType ReconciliationType    @map("reconciliation_type")
+  periodStart        DateTime              @map("period_start") @db.Date
+  periodEnd          DateTime              @map("period_end") @db.Date
+
+  status             BatchStatus           @default(PENDING)
+
+  createdAt          DateTime              @default(now()) @map("created_at")
+  updatedAt          DateTime              @updatedAt @map("updated_at")
+  completedAt        DateTime?             @map("completed_at")
+
+  // Relations
+  results            ReconciliationResult[]
+
+  @@index([partnerId])
+  @@index([status])
+  @@index([periodStart, periodEnd])
+  @@map("reconciliation_batches")
+}
+
+model ReconciliationResult {
+  id                String               @id @default(uuid()) @db.Uuid
+  batchId           String               @map("batch_id") @db.Uuid
+  batch             ReconciliationBatch  @relation(fields: [batchId], references: [id], onDelete: Cascade)
+
+  expectedCount     BigInt               @map("expected_count")
+  receivedCount     BigInt               @map("received_count")
+  matchedCount      BigInt               @map("matched_count")
+  mismatchedCount   BigInt               @map("mismatched_count")
+  missingRecords    BigInt               @map("missing_records")
+
+  financialImpact   Decimal              @map("financial_impact") @db.Decimal(15, 2)
+  disputeFlag       Boolean              @default(false) @map("dispute_flag")
+
+  createdAt         DateTime             @default(now()) @map("created_at")
+
+  @@index([batchId])
+  @@map("reconciliation_results")
+}
+
+enum ReconciliationType {
+  XDR
+  DAILY
+  INVOICE
+  FINANCIAL
+}
+
+enum BatchStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  DISPUTED
+}
+
+// ============================================================================
+// QOS TRACKING & REPORTING
+// ============================================================================
+
+model QoSMetric {
+  id              String      @id @default(uuid()) @db.Uuid
+  carrierId       String      @map("carrier_id") @db.Uuid
+  carrier         Partner     @relation("QoSMetrics", fields: [carrierId], references: [id], onDelete: Cascade)
+
+  destinationCode String      @map("destination_code") @db.VarChar(20)
+
+  asr             Decimal     @db.Decimal(5, 2) // Answer-Seizure Ratio
+  acdSeconds      Int         @map("acd_seconds") // Average Call Duration
+  ner             Decimal?    @db.Decimal(5, 2) // Network Effectiveness Ratio
+  pddMs           Int?        @map("pdd_ms") // Post-Dial Delay in milliseconds
+
+  totalCalls      BigInt      @default(0) @map("total_calls")
+  successfulCalls BigInt      @default(0) @map("successful_calls")
+
+  window          MetricWindow
+  windowStart     DateTime    @map("window_start")
+  windowEnd       DateTime    @map("window_end")
+
+  createdAt       DateTime    @default(now()) @map("created_at")
+
+  @@index([carrierId])
+  @@index([destinationCode])
+  @@index([window])
+  @@index([windowStart, windowEnd])
+  @@map("qos_metrics")
+}
+
+enum MetricWindow {
+  HOURLY
+  DAILY
+  WEEKLY
+  MONTHLY
+}
+
+// ============================================================================
+// NUMBERING PLAN MANAGEMENT
+// ============================================================================
+
+model NumberingPlan {
+  id              String            @id @default(uuid()) @db.Uuid
+  destinationCode String            @map("destination_code") @db.VarChar(20)
+  country         String            @db.VarChar(100)
+  region          String?           @db.VarChar(100)
+  description     String?           @db.VarChar(255)
+
+  effectiveFrom   DateTime          @map("effective_from") @db.Date
+  effectiveTo     DateTime?         @map("effective_to") @db.Date
+
+  status          NumberPlanStatus  @default(ACTIVE)
+  fraudRisk       Boolean           @default(false) @map("fraud_risk")
+  notes           String?           @db.Text
+
+  createdAt       DateTime          @default(now()) @map("created_at")
+  updatedAt       DateTime          @updatedAt @map("updated_at")
+
+  @@index([destinationCode])
+  @@index([country])
+  @@index([status])
+  @@index([fraudRisk])
+  @@map("numbering_plans")
+}
+
+enum NumberPlanStatus {
+  ACTIVE
+  DEPRECATED
+  RESERVED
+  BLOCKED
+}
+
+// ============================================================================
+// PEAK / OFF-PEAK RATING DEFINITIONS
+// ============================================================================
+
+model RatingTimeband {
+  id          String       @id @default(uuid()) @db.Uuid
+  name        TimebandName
+  description String?      @db.VarChar(255)
+
+  startTime   DateTime     @map("start_time") @db.Time
+  endTime     DateTime     @map("end_time") @db.Time
+
+  appliesOn   AppliesOnDay @map("applies_on")
+  countryCode String?      @map("country_code") @db.VarChar(3)
+
+  isActive    Boolean      @default(true) @map("is_active")
+
+  createdAt   DateTime     @default(now()) @map("created_at")
+  updatedAt   DateTime     @updatedAt @map("updated_at")
+
+  @@index([name])
+  @@index([countryCode])
+  @@index([isActive])
+  @@map("rating_timebands")
+}
+
+enum TimebandName {
+  PEAK
+  OFF_PEAK
+  WEEKEND
+  HOLIDAY
+  SPECIAL
+}
+
+enum AppliesOnDay {
+  ALL_DAYS
+  WEEKDAYS
+  WEEKENDS
+  SPECIFIC
 }

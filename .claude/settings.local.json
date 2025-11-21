@@ -3,7 +3,8 @@
     "allow": [
       "Bash(tree:*)",
       "Bash(sudo -S -u postgres psql:*)",
-      "Bash(npx tsx:*)"
+      "Bash(npx tsx:*)",
+      "Bash(PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION=\"backup first\" npx prisma migrate dev:*)"
     ],
     "deny": [],
     "ask": []

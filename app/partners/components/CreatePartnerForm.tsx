@@ -160,7 +160,7 @@ export default function CreatePartnerForm({ onClose, onSuccess }: CreatePartnerF
               <h2 className="text-2xl font-bold text-white">
                 {step === 1 ? 'Onboard New Partner' : 'Create Agreement'}
               </h2>
-              <p className="text-purple-100 mt-1">
+              <p className="text-blue-100 mt-1">
                 {step === 1 ? 'Add a new roaming/interconnect partner' : 'Define the commercial agreement'}
               </p>
               {/* Progress Indicator */}
@@ -342,7 +342,7 @@ export default function CreatePartnerForm({ onClose, onSuccess }: CreatePartnerF
                   d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                 />
               </svg>
-              <div className="text-sm text-purple-800">
+              <div className="text-sm text-gray-700">
                 <p className="font-semibold mb-1">Onboarding Process</p>
                 <p>
                   New partners will be created with status <strong>PENDING</strong>. After
@@ -370,7 +370,10 @@ export default function CreatePartnerForm({ onClose, onSuccess }: CreatePartnerF
             <button
               type="submit"
               disabled={loading}
-              className="px-6 py-3 bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white rounded-lg font-semibold hover:from-purple-700 hover:to-fuchsia-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+              className="px-6 py-3 text-white rounded-lg font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+              style={{ backgroundImage: 'linear-gradient(to right, #1f3d88, #1f8888)' }}
+              onMouseEnter={(e) => !loading && (e.currentTarget.style.backgroundImage = 'linear-gradient(to right, #163368, #178080)')}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundImage = 'linear-gradient(to right, #1f3d88, #1f8888)'}
             >
               {loading ? (
                 <>
@@ -412,7 +415,10 @@ export default function CreatePartnerForm({ onClose, onSuccess }: CreatePartnerF
                 type="text"
                 value={agreementData.agreement_name}
                 onChange={(e) => setAgreementData({ ...agreementData, agreement_name: e.target.value })}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent"
+                style={{ focusRingColor: '#1f3d88' }}
+                onFocus={(e: any) => e.currentTarget.style.borderColor = '#1f3d88'}
+                onBlur={(e: any) => e.currentTarget.style.borderColor = ''}
                 placeholder="Master Interconnect Agreement 2025"
                 required
               />
@@ -427,7 +433,10 @@ export default function CreatePartnerForm({ onClose, onSuccess }: CreatePartnerF
                 <select
                   value={agreementData.agreement_type}
                   onChange={(e) => setAgreementData({ ...agreementData, agreement_type: e.target.value as any })}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent"
+                style={{ focusRingColor: '#1f3d88' }}
+                onFocus={(e: any) => e.currentTarget.style.borderColor = '#1f3d88'}
+                onBlur={(e: any) => e.currentTarget.style.borderColor = ''}
                 >
                   <option value="INTERCONNECT">Interconnect</option>
                   <option value="ROAMING">Roaming</option>
@@ -442,7 +451,10 @@ export default function CreatePartnerForm({ onClose, onSuccess }: CreatePartnerF
                 <select
                   value={agreementData.currency}
                   onChange={(e) => setAgreementData({ ...agreementData, currency: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent"
+                style={{ focusRingColor: '#1f3d88' }}
+                onFocus={(e: any) => e.currentTarget.style.borderColor = '#1f3d88'}
+                onBlur={(e: any) => e.currentTarget.style.borderColor = ''}
                 >
                   <option value="USD">USD - US Dollar</option>
                   <option value="EUR">EUR - Euro</option>
@@ -463,7 +475,10 @@ export default function CreatePartnerForm({ onClose, onSuccess }: CreatePartnerF
                   type="date"
                   value={agreementData.start_date}
                   onChange={(e) => setAgreementData({ ...agreementData, start_date: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent"
+                style={{ focusRingColor: '#1f3d88' }}
+                onFocus={(e: any) => e.currentTarget.style.borderColor = '#1f3d88'}
+                onBlur={(e: any) => e.currentTarget.style.borderColor = ''}
                   required
                 />
               </div>
@@ -476,7 +491,10 @@ export default function CreatePartnerForm({ onClose, onSuccess }: CreatePartnerF
                   type="date"
                   value={agreementData.end_date}
                   onChange={(e) => setAgreementData({ ...agreementData, end_date: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent"
+                style={{ focusRingColor: '#1f3d88' }}
+                onFocus={(e: any) => e.currentTarget.style.borderColor = '#1f3d88'}
+                onBlur={(e: any) => e.currentTarget.style.borderColor = ''}
                 />
                 <p className="mt-1 text-xs text-gray-500">Leave empty for indefinite agreement</p>
               </div>
@@ -490,7 +508,10 @@ export default function CreatePartnerForm({ onClose, onSuccess }: CreatePartnerF
               <select
                 value={agreementData.billing_cycle}
                 onChange={(e) => setAgreementData({ ...agreementData, billing_cycle: e.target.value as any })}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent"
+                style={{ focusRingColor: '#1f3d88' }}
+                onFocus={(e: any) => e.currentTarget.style.borderColor = '#1f3d88'}
+                onBlur={(e: any) => e.currentTarget.style.borderColor = ''}
               >
                 <option value="MONTHLY">Monthly</option>
                 <option value="QUARTERLY">Quarterly</option>
@@ -499,12 +520,12 @@ export default function CreatePartnerForm({ onClose, onSuccess }: CreatePartnerF
             </div>
 
             {/* Info Box */}
-            <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+            <div className="rounded-lg p-4" style={{ backgroundColor: '#e8edf7', borderColor: '#a3b9df', borderWidth: '1px' }}>
               <div className="flex items-start">
-                <svg className="w-5 h-5 text-purple-600 mt-0.5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 mt-0.5 mr-3" style={{ color: '#1f3d88' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                <div className="text-sm text-purple-800">
+                <div className="text-sm text-gray-700">
                   <p className="font-semibold mb-1">Next Steps</p>
                   <p>After creating the agreement, you can add rate sheets and configure detailed pricing for different services.</p>
                 </div>
@@ -536,7 +557,10 @@ export default function CreatePartnerForm({ onClose, onSuccess }: CreatePartnerF
                 <button
                   type="submit"
                   disabled={loading}
-                  className="px-6 py-3 bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white rounded-lg font-semibold hover:from-purple-700 hover:to-fuchsia-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+                  className="px-6 py-3 text-white rounded-lg font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+                  style={{ backgroundImage: 'linear-gradient(to right, #1f3d88, #1f8888)' }}
+                  onMouseEnter={(e) => !loading && (e.currentTarget.style.backgroundImage = 'linear-gradient(to right, #163368, #178080)')}
+                  onMouseLeave={(e) => e.currentTarget.style.backgroundImage = 'linear-gradient(to right, #1f3d88, #1f8888)'}
                 >
                   {loading ? (
                     <>
